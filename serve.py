@@ -23,14 +23,15 @@ import re
 import threading
 import time
 import traceback
+from datetime import datetime
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 os.environ.setdefault("FINN_LIVE_TTL_MIN", "1.5")  # must be set before the pipeline is imported
 
-from pipeline import build, research  # noqa: E402
+from pipeline import build, news, research  # noqa: E402
 from pipeline.config import INDEX_SYMBOL, PORTFOLIO  # noqa: E402
-from pipeline.sources import ist_now, live_quotes  # noqa: E402
+from pipeline.sources import ist_now, live_quote, live_quotes  # noqa: E402
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 FEED_EVERY = int(os.environ.get("FINN_FEED_EVERY_SEC", 120))
@@ -45,6 +46,7 @@ LOCK = threading.Lock()
 RESEARCH = {}              # symbol -> (when built, result). A company's filings do not change minute to minute,
 RESEARCH_TTL = 600         # so a second look within ten minutes is answered from memory.
 RESEARCH_LOCK = threading.Lock()  # one build at a time: a small server does two at once slower than one after another
+SAVED_FRESH_H = 36         # saved research is rebuilt by the daily refresh job, and a company's numbers only change with results
 
 
 def load_snapshot():
@@ -113,8 +115,29 @@ def live_payload():
             "every": {"prices": QUOTES_EVERY if market_open() else 300, "filings": feed_pause()}}
 
 
+def saved_research(sym):
+    """A saved copy less than a day and a half old, with today's price and headlines added. Reading the
+    transcripts again would cost a small server close to a minute and change nothing until the next results."""
+    path = os.path.join(ROOT, "data", "research", f"{sym}.json")
+    try:
+        with open(path, encoding="utf-8") as f:
+            r = json.load(f)
+        age_h = (ist_now() - datetime.fromisoformat(r["generated"])).total_seconds() / 3600
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    if r.get("error") or age_h > SAVED_FRESH_H:
+        return None
+    try:
+        r["quote"] = live_quote(sym) or r.get("quote")
+        r["news"] = news.headlines(sym, r.get("name"), days=7, limit=5) or r.get("news", [])
+    except Exception:
+        traceback.print_exc()
+    return r
+
+
 def research_for(sym, fresh=False):
-    """Research for one ticker: from memory if it was built in the last ten minutes, otherwise built now."""
+    """Research for one ticker: from memory if it was built in the last ten minutes, from the saved copy if
+    that is recent, otherwise built now. Refresh (fresh=True) always rebuilds."""
     def with_live_price(r):
         q = STATE["quotes"].get(sym)
         return dict(r, quote=q) if q else r
@@ -122,9 +145,14 @@ def research_for(sym, fresh=False):
     hit = RESEARCH.get(sym)
     if hit and not fresh and time.time() - hit[0] < RESEARCH_TTL:
         return with_live_price(hit[1])
+    if not fresh:
+        r = saved_research(sym)
+        if r:
+            RESEARCH[sym] = (time.time(), r, False)
+            return with_live_price(r)
     with RESEARCH_LOCK:
         hit = RESEARCH.get(sym)  # someone else may have built it while this request waited
-        if hit and time.time() - hit[0] < (30 if fresh else RESEARCH_TTL):
+        if hit and time.time() - hit[0] < (30 if fresh else RESEARCH_TTL) and (hit[2] or not fresh):
             return with_live_price(hit[1])
         try:
             r = research.build(sym)  # company pages are cached for 12 hours, parsed documents for good
@@ -134,7 +162,7 @@ def research_for(sym, fresh=False):
         if not r.get("error"):
             if len(RESEARCH) > 200:
                 RESEARCH.pop(next(iter(RESEARCH)))
-            RESEARCH[sym] = (time.time(), r)
+            RESEARCH[sym] = (time.time(), r, True)
             build.write(f"research/{sym}.json", r)
         return r
 

@@ -323,7 +323,8 @@ def claims_check(scr, is_fin, max_calls=2):
     items = []
     for call in calls:
         try:
-            pages = pdf_pages(call["transcript"], max_pages=14)
+            # parsed once at 40 pages and shared with the guidance quotes; only the prepared remarks are checked
+            pages = pdf_pages(call["transcript"], max_pages=40)[:14]
         except Exception:
             continue
         claims = extract_claims(pages, is_fin)

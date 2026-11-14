@@ -418,7 +418,7 @@
   function researchBody(r) {
     const s = r.snapshot, t = r.trajectory, c = r.cash, b = r.balance, g = r.guidance || {}, items = g.items || [];
     const cred = r.verdict && r.verdict.credibility, out = [];
-    const savedNote = r._saved && S.live ? `<p class="stamp">Saved copy${r.generated ? " from " + dm(r.generated) + ", " + hm(r.generated) : ""}. ${r._failed ? "Couldn't refresh it just now." : "Checking the latest filings…"}</p>` : "";
+    const savedNote = r._saved && S.live ? `<p class="stamp">Saved copy${r.generated ? " from " + dm(r.generated) + ", " + hm(r.generated) : ""}. ${r._failed ? "Couldn't update it just now." : "Updating…"}</p>` : "";
     out.push(`<div class="rname"><h1>${esc(r.name)}</h1>${priceLine(r)}${savedNote}<p class="lede">${esc(r.about)}</p></div>`);
     out.push(`<div class="block"><div class="trio"><div><b>₹${inr(s.revenue_ttm)}</b><span>crore revenue, last 12 months</span></div>
       <div><b>${s.op_margin_ttm == null ? "–" : s.op_margin_ttm + "%"}</b><span>${esc(t.op_label)}</span></div>
