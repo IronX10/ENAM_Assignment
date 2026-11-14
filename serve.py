@@ -158,7 +158,7 @@ def research_for(sym, fresh=False):
             r = research.build(sym)  # company pages are cached for 12 hours, parsed documents for good
         except Exception as ex:
             traceback.print_exc()
-            r = {"symbol": sym, "error": f"Could not build research for {sym}: {ex}"}
+            r = {"symbol": sym, "error": f"Couldn't read {sym}'s filings just now. Try again in a minute."}
         if not r.get("error"):
             if len(RESEARCH) > 200:
                 RESEARCH.pop(next(iter(RESEARCH)))

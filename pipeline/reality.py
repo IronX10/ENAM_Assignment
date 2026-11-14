@@ -375,7 +375,8 @@ def claims_check(scr, is_fin, max_calls=2):
     if not n:
         summary = "The prepared remarks on the latest calls had no whole-company figures to check; management spoke in segment numbers."
     elif not off:
-        summary = f"All {n} company-wide figures management read out on the last {len(calls)} calls match the reported results."
+        summary = (f"The one company-wide figure management read out on the last {len(calls)} calls matches the reported results."
+                   if n == 1 else f"All {n} company-wide figures management read out on the last {len(calls)} calls match the reported results.")
     else:
         summary = f"{ok} of {n} company-wide figures read out on the last {len(calls)} calls match the reported results; {len(off)} do not."
     return {"items": items, "summary": summary, "checked": n, "matches": ok, "differs": len(off),
@@ -513,7 +514,7 @@ def profit_quality(scr, is_fin):
     if not checks:
         summary = "Not enough history to run the profit-quality checks."
     elif not bad:
-        summary = f"All {len(checks)} checks are clean."
+        summary = "The one check that applies is clean." if len(checks) == 1 else f"All {len(checks)} checks are clean."
     else:
         summary = f"{len(checks) - len(bad)} of {len(checks)} checks are clean; look at: " + ", ".join(c["title"].lower() for c in bad) + "."
     return {"checks": checks, "summary": summary, "clean": len(checks) - len(bad), "total": len(checks)}

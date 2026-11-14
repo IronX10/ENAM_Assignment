@@ -67,6 +67,8 @@ def build(symbol):
     scr = screener(symbol)
     if not scr or not scr.get("pl"):
         return {"symbol": symbol, "error": f"No company found for {symbol}. Check the NSE ticker, for example TRENT or NESTLEIND."}
+    if not scr["pl"].get("cols") or not scr.get("quarters") or not scr["quarters"].get("cols"):
+        return {"symbol": symbol, "error": f"{scr.get('name') or symbol} has no yearly results to read yet."}
 
     pl, bs, cf, rt, q = scr["pl"], scr["bs"], scr["cf"], scr["ratios"], scr["quarters"]
     is_fin = series(pl, "Financing Profit") is not None

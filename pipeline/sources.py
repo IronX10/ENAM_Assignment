@@ -296,7 +296,9 @@ def _screener(symbol, variants):
             # consolidated pages for companies without subsidiaries can be empty; check data rows
             soup = BeautifulSoup(html, "lxml")
             q = soup.find("section", id="quarters")
-            if q and q.find("tbody") and len(q.find("tbody").find_all("tr")) > 3:
+            head = q.find("thead") if q else None
+            # some list every row label but no quarter columns at all (PAGEIND), so count both
+            if q and q.find("tbody") and len(q.find("tbody").find_all("tr")) > 3 and head and len(head.find_all("th")) > 3:
                 break
     if not html:
         return None
