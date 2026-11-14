@@ -51,6 +51,8 @@ def _cached_get(url, ttl_hours=6, binary=False):
                 with open(path, "wb" if binary else "w", encoding=None if binary else "utf-8") as f:
                     f.write(data)
                 return data
+            if r.status_code in (404, 410):
+                return None  # a wrong ticker or a removed file: retrying will not help
             if r.status_code in (401, 403) and "nseindia" in url:
                 _S.get("https://www.nseindia.com/", timeout=20)  # refresh cookies
         except requests.RequestException:
@@ -97,10 +99,27 @@ def clean_exchange_text(text, company):
     return t[:1].upper() + t[1:] if t else t
 
 
+_PDF_MEMO = {}
+
+
 def pdf_pages(url, max_pages=6):
-    """Text of each of the first pages of a PDF (cached). Filings and transcripts are PDFs."""
+    """Text of each of the first pages of a PDF. Filings and transcripts are PDFs.
+    Parsing is the slowest step on a small server, so the extracted text is cached on disk and in
+    memory: each PDF is parsed once, not on every 2-minute refresh."""
     if not url:
         return []
+    key = hashlib.sha1(url.encode()).hexdigest()[:16]
+    tpath = os.path.join(CACHE, key + ".pages.json")
+    have = _PDF_MEMO.get(key)
+    if have is None and os.path.exists(tpath):
+        try:
+            with open(tpath, encoding="utf-8") as f:
+                have = json.load(f)
+        except (OSError, ValueError):
+            have = None
+    if have is not None and (have["n"] >= max_pages or have["complete"]):
+        _PDF_MEMO[key] = have
+        return have["pages"][:max_pages]
     data = _cached_get(url, ttl_hours=24 * 30, binary=True)
     if not data or not data[:4] == b"%PDF":
         return []
@@ -108,9 +127,19 @@ def pdf_pages(url, max_pages=6):
         import io
         from pypdf import PdfReader
         r = PdfReader(io.BytesIO(data))
-        return [(p.extract_text() or "") for p in r.pages[:max_pages]]
+        pages = [(p.extract_text() or "") for p in r.pages[:max_pages]]
+        have = {"n": max_pages, "complete": len(r.pages) <= max_pages, "pages": pages}
     except Exception:
         return []
+    _PDF_MEMO[key] = have
+    if len(_PDF_MEMO) > 400:
+        _PDF_MEMO.pop(next(iter(_PDF_MEMO)))
+    try:
+        with open(tpath, "w", encoding="utf-8") as f:
+            json.dump(have, f)
+    except OSError:
+        pass
+    return pages
 
 
 def pdf_text(url, max_pages=6):

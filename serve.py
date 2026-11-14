@@ -64,7 +64,8 @@ def feed_loop():
         except Exception as ex:
             STATE["feed_error"] = str(ex)
             traceback.print_exc()
-        busy = market_open() or ist_now().hour in range(15, 23)  # results land in the evening too
+        t = ist_now()
+        busy = t.weekday() < 5 and (market_open() or t.hour in range(15, 23))  # results land in the evening too
         time.sleep(FEED_EVERY if busy else FEED_EVERY * 5)
 
 

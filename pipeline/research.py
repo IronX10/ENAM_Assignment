@@ -229,7 +229,7 @@ def load_guidance(symbol, scr, quarters):
         return g
     calls = [c for c in scr["docs"]["concalls"] if c.get("transcript")][:4]
     items = []
-    for c in calls:
+    for c in (calls if llm.KEY else []):  # without a model key, skip straight to the quotes below
         snips = transcript_snippets(c["transcript"])
         rows = llm.extract_guidance(c["period"], snips)
         for r in rows:
