@@ -15,7 +15,7 @@ version of the feed, so it only downloads the feed again when something changed.
 Until the first live refresh finishes after a cold start, the app is served the
 last saved snapshot (data/feed.json) and says so.
 
-Routes: /api/live[?watch=X]  /api/feed  /api/quotes  /api/research?symbol=X  /api/status
+Routes: /api/live[?watch=X]  /api/feed  /api/quotes  /api/research?symbol=X[&fresh=1]  /api/status
 """
 import json
 import os
@@ -38,8 +38,13 @@ QUOTES_EVERY = int(os.environ.get("FINN_QUOTES_EVERY_SEC", 15))  # app polls eve
 DAYS = int(os.environ.get("FINN_DAYS", 30))
 
 STATE = {"feed": None, "feed_live": False, "feed_error": None, "quotes": {}, "quotes_at": None, "checked_at": None,
-         "extra": {}}  # research tickers someone is looking at, priced on the same 30-second beat
+         "extra": {},  # research tickers someone is looking at, priced on the same beat as the holdings
+         "started": time.time(), "builds": 0, "build_secs": None, "next_at": None}
 LOCK = threading.Lock()
+
+RESEARCH = {}              # symbol -> (when built, result). A company's filings do not change minute to minute,
+RESEARCH_TTL = 600         # so a second look within ten minutes is answered from memory.
+RESEARCH_LOCK = threading.Lock()  # one build at a time: a small server does two at once slower than one after another
 
 
 def load_snapshot():
@@ -47,6 +52,7 @@ def load_snapshot():
     if os.path.exists(path):
         with open(path, encoding="utf-8") as f:
             STATE["feed"] = json.load(f)
+        build.seed(STATE["feed"])
 
 
 def market_open():
@@ -54,19 +60,30 @@ def market_open():
     return t.weekday() < 5 and (9, 0) <= (t.hour, t.minute) <= (15, 45)
 
 
+def feed_pause():
+    """Seconds between filing refreshes: every 2 minutes on a trading day until 11 pm (results land in the
+    evening), every 10 minutes overnight and at weekends."""
+    t = ist_now()
+    busy = t.weekday() < 5 and (market_open() or t.hour in range(15, 23))
+    return FEED_EVERY if busy else FEED_EVERY * 5
+
+
 def feed_loop():
     while True:
+        t0 = time.time()
         try:
             _, feed = build.build_push(DAYS)
             with LOCK:
                 STATE["feed"], STATE["feed_live"], STATE["feed_error"] = feed, True, None
-            print(f"[feed] {feed['generated']} {feed['stats']}", flush=True)
+            print(f"[feed] {feed['generated']} {feed['stats']} in {time.time() - t0:.0f}s", flush=True)
         except Exception as ex:
             STATE["feed_error"] = str(ex)
             traceback.print_exc()
-        t = ist_now()
-        busy = t.weekday() < 5 and (market_open() or t.hour in range(15, 23))  # results land in the evening too
-        time.sleep(FEED_EVERY if busy else FEED_EVERY * 5)
+        STATE["builds"] += 1  # after the first attempt the app stops saying "waking up", even if NSE did not answer
+        STATE["build_secs"] = round(time.time() - t0, 1)
+        pause = feed_pause()
+        STATE["next_at"] = time.time() + pause
+        time.sleep(pause)
 
 
 def quotes_loop():
@@ -92,7 +109,35 @@ def live_payload():
     f = STATE["feed"] or {}
     return {"checked_at": STATE["checked_at"], "quotes_at": STATE["quotes_at"], "market_open": market_open(),
             "quotes": STATE["quotes"], "feed_generated": f.get("generated"), "live": STATE["feed_live"],
-            "every": {"prices": QUOTES_EVERY if market_open() else 300, "filings": FEED_EVERY}}
+            "ready": STATE["builds"] > 0,
+            "every": {"prices": QUOTES_EVERY if market_open() else 300, "filings": feed_pause()}}
+
+
+def research_for(sym, fresh=False):
+    """Research for one ticker: from memory if it was built in the last ten minutes, otherwise built now."""
+    def with_live_price(r):
+        q = STATE["quotes"].get(sym)
+        return dict(r, quote=q) if q else r
+
+    hit = RESEARCH.get(sym)
+    if hit and not fresh and time.time() - hit[0] < RESEARCH_TTL:
+        return with_live_price(hit[1])
+    with RESEARCH_LOCK:
+        hit = RESEARCH.get(sym)  # someone else may have built it while this request waited
+        if hit and time.time() - hit[0] < (30 if fresh else RESEARCH_TTL):
+            return with_live_price(hit[1])
+        try:
+            r = research.build(sym)  # company pages are cached for 12 hours, parsed documents for good
+        except Exception as ex:
+            traceback.print_exc()
+            r = {"symbol": sym, "error": f"Could not build research for {sym}: {ex}"}
+        if not r.get("error"):
+            if len(RESEARCH) > 200:
+                RESEARCH.pop(next(iter(RESEARCH)))
+            RESEARCH[sym] = (time.time(), r)
+            build.write(f"research/{sym}.json", r)
+        return r
+
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -105,12 +150,19 @@ class Handler(SimpleHTTPRequestHandler):
             return os.path.join(ROOT, p.lstrip("/"))
         return os.path.join(ROOT, "app", p.lstrip("/") or "index.html")
 
+    def end_headers(self):
+        if not getattr(self, "_api", False):
+            self.send_header("Cache-Control", "no-cache")  # always re-check app files, so an update shows at once
+        super().end_headers()
+
     def _json(self, obj, status=200):
         body = json.dumps(obj, ensure_ascii=False, separators=(",", ":")).encode()
+        self._api = True
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
         self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
 
@@ -118,7 +170,7 @@ class Handler(SimpleHTTPRequestHandler):
         u = urlparse(self.path)
         if u.path == "/api/feed":
             with LOCK:
-                feed = dict(STATE["feed"] or {}, live=STATE["feed_live"], market_open=market_open())
+                feed = dict(STATE["feed"] or {}, live=STATE["feed_live"], ready=STATE["builds"] > 0, market_open=market_open())
             return self._json(feed)
         if u.path == "/api/live":
             sym = re.sub(r"[^A-Z0-9&-]", "", (parse_qs(u.query).get("watch", [""])[0]).upper())
@@ -132,20 +184,19 @@ class Handler(SimpleHTTPRequestHandler):
             with LOCK:
                 return self._json({"at": STATE["quotes_at"], "market_open": market_open(), "quotes": STATE["quotes"]})
         if u.path == "/api/status":
-            return self._json({"live": STATE["feed_live"], "generated": (STATE["feed"] or {}).get("generated"),
+            f = STATE["feed"] or {}
+            return self._json({"live": STATE["feed_live"], "generated": f.get("generated"),
+                               "filings_checked": f.get("filings_checked"),
                                "quotes_at": STATE["quotes_at"], "checked_at": STATE["checked_at"],
-                               "error": STATE["feed_error"], "market_open": market_open()})
+                               "error": STATE["feed_error"], "market_open": market_open(),
+                               "builds": STATE["builds"], "build_secs": STATE["build_secs"],
+                               "next_refresh_secs": round(STATE["next_at"] - time.time()) if STATE["next_at"] else 0,
+                               "up_secs": round(time.time() - STATE["started"])})
         if u.path == "/api/research":
             sym = re.sub(r"[^A-Z0-9&-]", "", (parse_qs(u.query).get("symbol", [""])[0]).upper())
             if not sym:
                 return self._json({"error": "Type an NSE ticker, for example TRENT."}, 400)
-            try:
-                r = research.build(sym)  # screener.in pages are cached for 12 hours
-            except Exception as ex:
-                r = {"symbol": sym, "error": f"Could not build research for {sym}: {ex}"}
-            if not r.get("error"):
-                build.write(f"research/{sym}.json", r)
-            return self._json(r)
+            return self._json(research_for(sym, fresh=parse_qs(u.query).get("fresh", [""])[0] == "1"))
         return super().do_GET()
 
 

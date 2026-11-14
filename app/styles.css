@@ -87,6 +87,8 @@ h1 { font-size: 28px; line-height: 1.15; font-weight: 700; margin: 0; letter-spa
 .sp .pc { stroke: var(--line); stroke-dasharray: 2 2; }
 .px .sp { display: inline-block; vertical-align: middle; margin: 0 4px; }
 .index { margin: 6px 0 0; font-size: 14px; color: var(--ink-2); }
+.stamp { margin: 4px 0 0; font-size: 13px; color: var(--ink-3); }
+.links span { color: var(--ink-2); }
 .index b { color: var(--ink); font-weight: 600; }
 .status.live.open i { animation: pulse 2s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: .35; } }

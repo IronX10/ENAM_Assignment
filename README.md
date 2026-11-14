@@ -24,10 +24,12 @@ The server keeps the data live by itself, so the app opens instantly with fresh 
 | What | How often | Source |
 |---|---|---|
 | Price, change and today's intraday line for every holding and the Nifty | every 15 seconds in market hours (one batched request), every 5 minutes when closed | Yahoo Finance |
-| Filings, re-scored and re-ranked, with business headlines | every 2 minutes (every 10 overnight) | NSE announcements, Google News RSS |
-| Research for any NSE ticker | when you ask; financials cached 12 hours; its price joins the 15-second loop while you look at it | screener.in, annual reports, concall transcripts |
+| Filings, re-scored and re-ranked, with business headlines | every 2 minutes on trading days until 11 pm, when results land; every 10 minutes overnight and at weekends | NSE announcements, Google News RSS |
+| Research for any NSE ticker | when you ask; opens at once from the saved copy if there is one, then the live build replaces it in place; financials cached 12 hours; its price joins the 15-second loop while you look at it | screener.in, annual reports, concall transcripts |
 
-While it is open, the app asks the server every 30 seconds for one small update (`/api/live`): new prices are written into the page in place, with a brief green or red flash on any price that moved, and the page only downloads the feed again when a new filing has changed it. The top bar shows **Live · checked 12s ago · next in 18s**, ticking every second, or **Market closed** with the last trade time, plus a Refresh button. Updates pause while the tab is hidden and resume the moment you come back. After a cold start the server serves the last saved snapshot (`data/feed.json`) until its first live refresh finishes, about a minute later.
+While it is open, the app asks the server every 30 seconds for one small update (`/api/live`): new prices are written into the page in place, with a brief green or red flash on any price that moved, and the page only downloads the feed again when a new filing has changed it. The top bar shows **Live · checked 12s ago · next in 18s**, ticking every second, or **Market closed** with the last trade time, plus a Refresh button. Updates pause while the tab is hidden and resume the moment you come back. After a cold start the server serves the last saved snapshot (`data/feed.json`) until its first refresh of the filings finishes; until then the top bar says **Waking up** and the page says which time the filings are from. Under the Today headline the page always says when filings and headlines were last checked. If NSE stops answering, the server keeps the last good feed rather than showing an empty one, and that line keeps the true time.
+
+A refresh is cheap on purpose, because Render's free plan has a tenth of a CPU: each company page is parsed once and kept for 30 minutes, parsed PDFs are kept on disk, and a source that just failed is not retried for 5 minutes (its last good copy is used instead). A steady refresh takes about 0.2 seconds of CPU.
 
 Without a server (any static host), the app opens the saved snapshot and says "Saved" with its date instead of "Live".
 

@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import re
+import threading
 import time
 from datetime import datetime, timedelta
 
@@ -37,28 +38,61 @@ _S.headers.update({
 })
 
 
+_FAILED = {}  # url -> when it last failed. A source that is down is left alone for a few minutes.
+FAIL_QUIET_SEC = 300
+_TL = threading.local()
+
+
+def last_fetch_failed():
+    """True if this thread's most recent _cached_get could not reach its source (it may still have
+    returned an older saved copy). Lets a caller say honestly how fresh its data is."""
+    return getattr(_TL, "failed", False)
+
+
+def _read(path, binary):
+    with open(path, "rb" if binary else "r", encoding=None if binary else "utf-8") as f:
+        return f.read()
+
+
 def _cached_get(url, ttl_hours=6, binary=False):
+    """Fetch with a disk cache. If the source fails, the last good copy is served instead, however old,
+    so a blocked or slow source never removes data that was already on screen."""
+    _TL.failed = False
+    if not url or not str(url).startswith("http"):
+        return None  # NSE sends "-" when a filing has no attachment
     key = hashlib.sha1(url.encode()).hexdigest()[:16]
     path = os.path.join(CACHE, key + (".bin" if binary else ".txt"))
-    if os.path.exists(path) and (time.time() - os.path.getmtime(path)) < ttl_hours * 3600:
-        with open(path, "rb" if binary else "r", encoding=None if binary else "utf-8") as f:
-            return f.read()
+    have = os.path.exists(path)
+    if have and (time.time() - os.path.getmtime(path)) < ttl_hours * 3600:
+        return _read(path, binary)
+    if time.time() - _FAILED.get(url, 0) < FAIL_QUIET_SEC:
+        _TL.failed = True
+        return _read(path, binary) if have else None
     for attempt in range(3):
         try:
-            r = _S.get(url, timeout=40)
+            r = _S.get(url, timeout=25)
             if r.status_code == 200:
                 data = r.content if binary else r.text
-                with open(path, "wb" if binary else "w", encoding=None if binary else "utf-8") as f:
+                tmp = f"{path}.{threading.get_ident()}.tmp"  # write then rename: readers never see half a file
+                with open(tmp, "wb" if binary else "w", encoding=None if binary else "utf-8") as f:
                     f.write(data)
+                os.replace(tmp, path)
+                _FAILED.pop(url, None)
                 return data
             if r.status_code in (404, 410):
-                return None  # a wrong ticker or a removed file: retrying will not help
+                break  # a wrong ticker or a removed file: retrying will not help
             if r.status_code in (401, 403) and "nseindia" in url:
                 _S.get("https://www.nseindia.com/", timeout=20)  # refresh cookies
+        except requests.Timeout:
+            break  # a source that hangs will hang again; do not hold up the whole refresh
         except requests.RequestException:
             pass
         time.sleep(1.5 * (attempt + 1))
-    return None
+    _TL.failed = True
+    _FAILED[url] = time.time()
+    if len(_FAILED) > 2000:
+        _FAILED.clear()
+    return _read(path, binary) if have else None
 
 
 # ---------------------------------------------------------------- NSE filings
@@ -85,7 +119,7 @@ def nse_announcements(symbol, from_date, to_date):
             "subject": (x.get("desc") or "").strip(),
             "text": clean_exchange_text(x.get("attchmntText") or "", x.get("sm_name", "")),
             "summary": (x.get("voiceSummary") or "").strip(),
-            "pdf": x.get("attchmntFile"),
+            "pdf": x.get("attchmntFile") if str(x.get("attchmntFile") or "").startswith("http") else None,
             "industry": x.get("smIndustry"),
         })
     return out
@@ -106,7 +140,7 @@ def pdf_pages(url, max_pages=6):
     """Text of each of the first pages of a PDF. Filings and transcripts are PDFs.
     Parsing is the slowest step on a small server, so the extracted text is cached on disk and in
     memory: each PDF is parsed once, not on every 2-minute refresh."""
-    if not url:
+    if not url or not str(url).startswith("http"):
         return []
     key = hashlib.sha1(url.encode()).hexdigest()[:16]
     tpath = os.path.join(CACHE, key + ".pages.json")
@@ -121,7 +155,11 @@ def pdf_pages(url, max_pages=6):
         _PDF_MEMO[key] = have
         return have["pages"][:max_pages]
     data = _cached_get(url, ttl_hours=24 * 30, binary=True)
-    if not data or not data[:4] == b"%PDF":
+    if not data:
+        return []  # could not be fetched; tried again later
+    unreadable = {"n": max_pages, "complete": True, "pages": []}
+    if not data[:4] == b"%PDF":
+        _PDF_MEMO[key] = unreadable  # not a PDF (some filings are XML or zip); no point re-reading it every refresh
         return []
     try:
         import io
@@ -130,13 +168,16 @@ def pdf_pages(url, max_pages=6):
         pages = [(p.extract_text() or "") for p in r.pages[:max_pages]]
         have = {"n": max_pages, "complete": len(r.pages) <= max_pages, "pages": pages}
     except Exception:
+        _PDF_MEMO[key] = unreadable
         return []
     _PDF_MEMO[key] = have
-    if len(_PDF_MEMO) > 400:
+    if len(_PDF_MEMO) > 300:
         _PDF_MEMO.pop(next(iter(_PDF_MEMO)))
     try:
-        with open(tpath, "w", encoding="utf-8") as f:
+        tmp = f"{tpath}.{threading.get_ident()}.tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
             json.dump(have, f)
+        os.replace(tmp, tpath)
     except OSError:
         pass
     return pages
@@ -227,12 +268,30 @@ def _num(s):
         return None
 
 
+_SCR_MEMO = {}       # (symbol, variants) -> (when parsed, result)
+SCR_MEMO_SEC = 1800  # the page itself is cached for 12 hours; parsing it is the costly part on a small server
+
+
 def screener(symbol, variants=("consolidated/", "")):
     """Standardised tables (from annual reports / quarterly filings) + document links.
-    Consolidated first; pass variants=("",) for the standalone statements."""
-    html = None
+    Consolidated first; pass variants=("",) for the standalone statements.
+    The parsed result is shared and kept for half an hour: treat it as read-only."""
+    hit = _SCR_MEMO.get((symbol, variants))
+    if hit and time.time() - hit[0] < SCR_MEMO_SEC:
+        return hit[1]
+    out = _screener(symbol, variants)
+    if out:  # a failed fetch is simply tried again next time
+        if len(_SCR_MEMO) > 300:
+            _SCR_MEMO.clear()
+        _SCR_MEMO[(symbol, variants)] = (time.time(), out)
+    return out
+
+
+def _screener(symbol, variants):
+    html = soup = variant = None
     for variant in variants:
         html = _cached_get(f"https://www.screener.in/company/{symbol}/{variant}", ttl_hours=12)
+        soup = None
         if html and 'id="quarters"' in html:
             # consolidated pages for companies without subsidiaries can be empty; check data rows
             soup = BeautifulSoup(html, "lxml")
@@ -241,7 +300,7 @@ def screener(symbol, variants=("consolidated/", "")):
                 break
     if not html:
         return None
-    soup = BeautifulSoup(html, "lxml")
+    soup = soup or BeautifulSoup(html, "lxml")
     out = {"symbol": symbol, "url": f"https://www.screener.in/company/{symbol}/{variant}",
            "basis": "consolidated" if variant else "standalone"}
     h1 = soup.find("h1")

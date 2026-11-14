@@ -20,7 +20,7 @@
   const POLL = 30e3; // the app asks the server for fresh prices every 30 seconds
 
   const S = {
-    feed: null, live: false, quotes: {}, quotesAt: null, checkedAt: null, marketOpen: false, index: [], nextAt: 0, every: null,
+    feed: null, live: false, feedLive: true, quotes: {}, quotesAt: null, checkedAt: null, marketOpen: false, index: [], nextAt: 0, every: null, rbusy: new Set(),
     tab: "today", days: store.get("days", 7), seen: new Set(store.get("seen", [])), less: new Set(store.get("less", [])),
     rules: null, routineOpen: false, newsOpen: false, research: {}, rsym: store.get("rsym", "POLYCAB"), rerr: null, loading: false, open: null,
   };
@@ -37,6 +37,7 @@
   const inr = (v, d = 0) => v == null ? "–" : v.toLocaleString("en-IN", { minimumFractionDigits: d, maximumFractionDigits: d });
   const hm = (iso) => D(iso).toLocaleTimeString("en-IN", { ...IST, hour: "2-digit", minute: "2-digit" });
   const dm = (iso) => D(iso).toLocaleDateString("en-IN", { ...IST, day: "numeric", month: "short" });
+  const dayHm = (iso) => (dm(iso) === dm(new Date()) ? "" : D(iso).toLocaleDateString("en-IN", { ...IST, weekday: "short" }) + " ") + hm(iso);
   function ago(iso) {
     const h = (now() - D(iso)) / 36e5;
     if (h < 1) return "now";
@@ -106,17 +107,28 @@
   const allItems = () => S.feed.events.concat(priceItems());
 
   // ---------------------------------------------------------------- status line
+  // S.live: a FINN server is answering. S.feedLive: that server has finished its first try at refreshing the filings.
+  // For the first couple of minutes after the server wakes it serves live prices with the filings it was saved with.
+  const statusClass = () => "status" + (S.live && S.feedLive ? " live" + (S.marketOpen ? " open" : "") : "");
   function statusLine() {
     if (!S.live) return `<span class="status"><i></i>Saved ${dm(S.feed.generated)}, ${hm(S.feed.generated)}</span>`;
-    return `<span class="status live ${S.marketOpen ? "open" : ""}"><i></i><span id="tick">${tickText()}</span> <button data-refresh aria-label="Refresh now">Refresh</button></span>`;
+    return `<span class="${statusClass()}"><i></i><span id="tick">${tickText()}</span> <button data-refresh aria-label="Refresh now">Refresh</button></span>`;
   }
   function tickText() {
     if (!S.live) return "";
+    if (!S.feedLive) return "Waking up · filings refreshing";
     const secs = (iso) => Math.max(0, Math.round((Date.now() - D(iso)) / 1e3));
     const age = (n) => n < 60 ? n + "s ago" : n < 3600 ? Math.round(n / 60) + "m ago" : hm(new Date(Date.now() - n * 1e3));
-    if (!S.marketOpen) return `Market closed${S.quotesAt ? " · last trade " + hm(S.quotesAt) : ""}`;
+    if (!S.marketOpen) return `Market closed${S.quotesAt ? " · last trade " + dayHm(S.quotesAt) : ""}`;
     const next = Math.max(0, Math.ceil((S.nextAt - Date.now()) / 1e3));
     return `Live · checked ${S.checkedAt ? age(secs(S.checkedAt)) : "now"}${next ? ` · next in ${next}s` : ""}`;
+  }
+  // when the filings and headlines on screen were last fetched from the exchange
+  function filingsStamp() {
+    if (!S.live) return "";
+    const t = S.feed.filings_checked || S.feed.generated;
+    const when = (dm(t) === dm(new Date()) ? "" : dm(t) + ", ") + hm(t);
+    return `<p class="stamp" id="stamp">${S.feedLive ? `Filings and headlines checked ${when}.` : `Filings as of ${when}. Newer ones are loading.`}</p>`;
   }
 
   // ---------------------------------------------------------------- live prices, patched in place every 30 seconds
@@ -158,7 +170,7 @@
         el.classList.add(now > before ? "flash-up" : "flash-down");
       }
     });
-    const t = $("#tick"); if (t) t.textContent = tickText();
+    const t = $("#tick"); if (t) { t.textContent = tickText(); t.parentElement.className = statusClass(); }
   }
 
   // ---------------------------------------------------------------- Today
@@ -188,7 +200,7 @@
         <p class="date">${new Date().toLocaleDateString("en-IN", { ...IST, weekday: "long", day: "numeric", month: "long" })}</p>
         <h1>${title}</h1>
         ${niftyLine()}
-        <p class="lede">${g.look.length} more worth a look ${span}. ${g.rt.length} routine filings set aside.</p></header>
+        <p class="lede">${g.look.length} more worth a look ${span}. ${g.rt.length} routine filings set aside.</p>${filingsStamp()}</header>
       <div class="tabsw" role="group" aria-label="Period">${[[1, "Today"], [7, "Week"], [30, "Month"]].map(([d, l]) => `<button data-days="${d}" aria-pressed="${S.days === d}">${l}</button>`).join("")}</div>
       ${sec("Needs you", g.act, "Nothing crossed your alert line.")}
       ${sec("Worth a look", g.look, "Nothing else stood out.")}
@@ -282,7 +294,7 @@
       <div><b>${(rx.vol_x || 0).toFixed(1)}×</b><span>usual volume</span></div><div><b class="${cls(rx.rel)}">${pct(rx.rel)}</b><span>vs Nifty 50</span></div></div>` : `<p class="note">No trading day after this yet.</p>`}
       ${spark(e.symbol, rx && rx.date)}</div>`);
     b.push(why(e));
-    if (e.related && e.related.length) b.push(`<div class="block"><h3>Also filed with it</h3><div class="links">${e.related.map((r) => `<a href="${esc(r.pdf)}" target="_blank" rel="noopener">${esc(r.text || r.subject)}</a>`).join("")}</div></div>`);
+    if (e.related && e.related.length) b.push(`<div class="block"><h3>Also filed with it</h3><div class="links">${e.related.map((r) => r.pdf ? `<a href="${esc(r.pdf)}" target="_blank" rel="noopener">${esc(r.text || r.subject)}</a>` : `<span>${esc(r.text || r.subject)}</span>`).join("")}</div></div>`);
     const key = e.symbol + ":" + e.category;
     return `<div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(e.symbol)}"><div class="sheet-in">
       <button class="back" data-close>‹ Back</button>
@@ -298,21 +310,50 @@
   }
 
   // ---------------------------------------------------------------- research
-  async function loadResearch(sym) {
+  // Re-draw the page without losing the reader's place: same scroll position, same quotes left open.
+  function keepPlace(draw) {
+    const open = [...document.querySelectorAll("#main details")].map((d) => d.open), y = window.scrollY;
+    draw();
+    document.querySelectorAll("#main details").forEach((d, i) => { if (open[i]) d.open = true; });
+    window.scrollTo(0, y);
+  }
+
+  // Research opens at once from the copy saved with the app, when this company has one, and the live
+  // build from the server then replaces it in place. A company with no saved copy waits for the live build.
+  async function loadResearch(sym, fresh) {
     sym = String(sym || "").toUpperCase().replace(/[^A-Z0-9&-]/g, "");
     if (!sym) return;
-    S.rsym = sym; store.set("rsym", sym); S.rerr = null;
+    S.rsym = sym; store.set("rsym", sym); S.rerr = null; S.loading = false;
+    const here = () => S.rsym === sym;                       // the reader may have moved on to another company
+    const show = () => { if (here() && S.tab === "research") render(); };
     if (!S.research[sym]) {
-      S.loading = true; render();
-      let r = null;
-      try { const res = await fetch(`api/research?symbol=${encodeURIComponent(sym)}`, { cache: "no-store" }); if (res.ok && (res.headers.get("content-type") || "").includes("json")) r = await res.json(); } catch (e) { /* no server */ }
-      if (!r) { try { const res = await fetch(`data/research/${sym}.json`); if (res.ok) r = await res.json(); } catch (e) { /* not saved */ } }
-      S.loading = false;
-      if (!r) S.rerr = S.live ? `Couldn't find ${sym} on NSE. Check the ticker.` : `${sym} needs the live server. This copy has ${S.index.length} companies saved; try one below.`;
-      else if (r.error) S.rerr = r.error;
-      else S.research[sym] = r;
+      S.loading = true; show();
+      const listed = S.index.some((x) => x.symbol === sym);   // only ask for a saved copy that exists
+      const saved = listed ? await getJSON(`data/research/${sym}.json`).catch(() => null) : null;
+      if (saved && !saved.error && !S.research[sym]) { saved._saved = true; S.research[sym] = saved; }
+      if (S.research[sym] && here()) { S.loading = false; show(); }
     }
-    if (S.tab === "research") { render(); poll(false); }
+    const have = S.research[sym];
+    if (S.live && (!have || have._saved || fresh) && !S.rbusy.has(sym)) {
+      S.rbusy.add(sym);
+      let r = null;
+      try { r = await getJSON(`api/research?symbol=${encodeURIComponent(sym)}${fresh ? "&fresh=1" : ""}`); } catch (e) { /* server asleep or busy */ }
+      S.rbusy.delete(sym);
+      if (r && !r.error) S.research[sym] = r;
+      else if (S.research[sym] && S.research[sym]._saved) S.research[sym]._failed = true;  // keep the saved copy, and say so
+      if (here()) {
+        S.loading = false;
+        if (!S.research[sym]) S.rerr = r && r.error ? r.error : `Couldn't reach the server for ${sym}. Try again in a moment.`;
+        if (S.tab === "research") { keepPlace(renderMain); poll(false); }
+      }
+      return;
+    }
+    if (here()) {
+      S.loading = !S.research[sym] && S.rbusy.has(sym);     // a live build for this company is already on its way
+      if (!S.research[sym] && !S.loading) S.rerr = `${sym} needs the live server. This copy has ${S.index.length} companies saved; try one below.`;
+      show();
+      if (S.tab === "research") poll(false);
+    }
   }
 
   function bars(labels, vals, line) {
@@ -377,7 +418,8 @@
   function researchBody(r) {
     const s = r.snapshot, t = r.trajectory, c = r.cash, b = r.balance, g = r.guidance || {}, items = g.items || [];
     const cred = r.verdict && r.verdict.credibility, out = [];
-    out.push(`<div class="rname"><h1>${esc(r.name)}</h1>${priceLine(r)}<p class="lede">${esc(r.about)}</p></div>`);
+    const savedNote = r._saved && S.live ? `<p class="stamp">Saved copy${r.generated ? " from " + dm(r.generated) + ", " + hm(r.generated) : ""}. ${r._failed ? "Couldn't refresh it just now." : "Checking the latest filings…"}</p>` : "";
+    out.push(`<div class="rname"><h1>${esc(r.name)}</h1>${priceLine(r)}${savedNote}<p class="lede">${esc(r.about)}</p></div>`);
     out.push(`<div class="block"><div class="trio"><div><b>₹${inr(s.revenue_ttm)}</b><span>crore revenue, last 12 months</span></div>
       <div><b>${s.op_margin_ttm == null ? "–" : s.op_margin_ttm + "%"}</b><span>${esc(t.op_label)}</span></div>
       <div><b>₹${inr(s.pat_ttm)}</b><span>crore profit</span></div></div></div>`);
@@ -533,7 +575,7 @@
   async function loadFeed() {
     try {
       const f = await getJSON("api/feed");
-      if (f && f.events) { S.feed = f; S.live = true; S.marketOpen = !!f.market_open; return; }
+      if (f && f.events) { S.feed = f; S.live = true; S.feedLive = (f.ready ?? f.live) !== false; S.marketOpen = !!f.market_open; return; }
     } catch (e) { /* no server here */ }
     if (!S.feed) { S.feed = await getJSON("data/feed.json"); S.live = false; }
   }
@@ -547,10 +589,11 @@
       const L = await getJSON("api/live" + watch);
       Object.assign(S.quotes, L.quotes || {});
       S.quotesAt = L.quotes_at; S.checkedAt = L.checked_at; S.marketOpen = !!L.market_open; S.every = L.every;
-      if (force || (L.feed_generated && L.feed_generated !== S.feed.generated)) {
+      const woke = !S.feedLive && (L.ready ?? L.live) !== false;  // the server has finished its first refresh
+      if (force || woke || (L.feed_generated && L.feed_generated !== S.feed.generated)) {
         await loadFeed();
-        if (S.tab === "today") { const y = window.scrollY; renderMain(); window.scrollTo(0, y); }
-        if (force && S.tab === "research") { delete S.research[S.rsym]; loadResearch(S.rsym); }
+        if (S.tab === "today") keepPlace(renderMain);
+        if (force && S.tab === "research") loadResearch(S.rsym, true);
       }
       patchPrices();
     } catch (e) { /* server busy; try again on the next beat */ }
