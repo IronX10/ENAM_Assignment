@@ -26,14 +26,19 @@
   };
 
   // ---------------------------------------------------------------- helpers
-  const now = () => new Date(S.feed.generated);
+  // Exchange times are IST. Times without an offset are read as IST, and every time is shown in IST,
+  // so the app tells the same story on a phone in Mumbai or a laptop in London.
+  const D = (iso) => iso instanceof Date ? iso : /^\d{4}-\d\d-\d\d$/.test(iso) ? new Date(iso + "T12:00:00+05:30")
+    : new Date(/(Z|[+-]\d\d:?\d\d)$/.test(iso) ? iso : iso + "+05:30");
+  const IST = { timeZone: "Asia/Kolkata" };
+  const now = () => D(S.feed.generated);
   const pct = (v, d = 1) => v == null || isNaN(v) ? "–" : (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(d) + "%";
   const cls = (v) => v == null ? "" : v > 0 ? "up" : v < 0 ? "down" : "";
   const inr = (v, d = 0) => v == null ? "–" : v.toLocaleString("en-IN", { minimumFractionDigits: d, maximumFractionDigits: d });
-  const hm = (iso) => new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
-  const dm = (iso) => new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  const hm = (iso) => D(iso).toLocaleTimeString("en-IN", { ...IST, hour: "2-digit", minute: "2-digit" });
+  const dm = (iso) => D(iso).toLocaleDateString("en-IN", { ...IST, day: "numeric", month: "short" });
   function ago(iso) {
-    const h = (now() - new Date(iso)) / 36e5;
+    const h = (now() - D(iso)) / 36e5;
     if (h < 1) return "now";
     if (h < 24) return Math.round(h) + "h";
     const d = Math.round(h / 24);
@@ -58,7 +63,7 @@
 
   // ---------------------------------------------------------------- price moves, by the investor's own thresholds
   function priceItems() {
-    const out = [], since = new Date(now() - S.days * 864e5).toISOString().slice(0, 10);
+    const out = [], since = new Date(now() - S.days * 864e5 + 19800e3).toISOString().slice(0, 10);
     const nf = S.feed.prices.NIFTY, nIdx = nf ? Object.fromEntries(nf.d.map((d, i) => [d, nf.c[i]])) : {};
     for (const h of S.feed.portfolio) {
       const px = S.feed.prices[h.symbol]; if (!px) continue;
@@ -91,7 +96,7 @@
   function lists() {
     const since = new Date(now() - S.days * 864e5);
     const g = { act: [], look: [], rt: [] };
-    for (const e of S.feed.events.filter((x) => new Date(x.time) >= since).concat(priceItems())) { e._b = bucket(e); g[e._b].push(e); }
+    for (const e of S.feed.events.filter((x) => D(x.time) >= since).concat(priceItems())) { e._b = bucket(e); g[e._b].push(e); }
     const order = (a, b) => (S.seen.has(a.id) - S.seen.has(b.id)) || b.score - a.score;
     g.act.sort(order); g.look.sort(order); g.rt.sort((a, b) => (a.time < b.time ? 1 : -1));
     return g;
@@ -107,8 +112,8 @@
   }
   function tickText() {
     if (!S.live) return "";
-    const secs = (iso) => Math.max(0, Math.round((Date.now() - new Date(iso)) / 1e3));
-    const age = (n) => n < 60 ? n + "s ago" : n < 3600 ? Math.round(n / 60) + "m ago" : hm(new Date(Date.now() - n * 1e3).toISOString());
+    const secs = (iso) => Math.max(0, Math.round((Date.now() - D(iso)) / 1e3));
+    const age = (n) => n < 60 ? n + "s ago" : n < 3600 ? Math.round(n / 60) + "m ago" : hm(new Date(Date.now() - n * 1e3));
     if (!S.marketOpen) return `Market closed${S.quotesAt ? " · last trade " + hm(S.quotesAt) : ""}`;
     const next = Math.max(0, Math.ceil((S.nextAt - Date.now()) / 1e3));
     return `Live · checked ${S.checkedAt ? age(secs(S.checkedAt)) : "now"}${next ? ` · next in ${next}s` : ""}`;
@@ -180,7 +185,7 @@
     }).join("");
 
     return `<header class="top"><div class="bar"><span class="brand">FINN</span>${statusLine()}</div>
-        <p class="date">${new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}</p>
+        <p class="date">${new Date().toLocaleDateString("en-IN", { ...IST, weekday: "long", day: "numeric", month: "long" })}</p>
         <h1>${title}</h1>
         ${niftyLine()}
         <p class="lede">${g.look.length} more worth a look ${span}. ${g.rt.length} routine filings set aside.</p></header>
@@ -195,14 +200,14 @@
 
   // ---------------------------------------------------------------- headlines (context only, never scored)
   const sinceT = (iso) => {
-    const h = (Date.now() - new Date(iso)) / 36e5;
+    const h = (Date.now() - D(iso)) / 36e5;
     return h < 1 ? Math.max(1, Math.round(h * 60)) + "m" : h < 24 ? Math.round(h) + "h" : Math.round(h / 24) + "d";
   };
   const newsRow = (n, sym) => `<a class="news" href="${esc(n.link)}" target="_blank" rel="noopener">
       <span class="l1">${sym ? `<span class="sym">${esc(n.symbol)}</span>` : ""}<span>${esc(n.source)}</span>${n.time ? `<span class="t">${sinceT(n.time)}</span>` : ""}</span>
       <span class="l2">${esc(n.title)}</span></a>`;
   function headlines() {
-    const all = (S.feed.news || []).filter((n) => !n.time || Date.now() - new Date(n.time) < Math.max(S.days, 3) * 864e5);
+    const all = (S.feed.news || []).filter((n) => !n.time || Date.now() - D(n.time) < Math.max(S.days, 3) * 864e5);
     if (!all.length) return "";
     const list = S.newsOpen ? all.slice(0, 40) : all.slice(0, 5);
     return `<section class="sec"><h2><span>In the news</span><span>${all.length}</span></h2><div class="rows">${list.map((n) => newsRow(n, true)).join("")}
