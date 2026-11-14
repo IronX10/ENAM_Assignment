@@ -1,0 +1,17 @@
+# One-click hosting on Render's free plan: New > Blueprint > pick this repo.
+# The server refreshes prices every 15 seconds and filings and headlines every 2 minutes on its own;
+# the app picks up new prices every 30 seconds.
+services:
+  - type: web
+    name: finn
+    runtime: python
+    plan: free
+    region: singapore   # closest free region to the NSE
+    buildCommand: pip install -r requirements.txt
+    startCommand: python serve.py
+    healthCheckPath: /api/status
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: ANTHROPIC_API_KEY   # optional: grades management's promises for any company
+        sync: false

@@ -1,0 +1,101 @@
+{
+ "extracted_by": "Extracted at build time by Claude from the transcript text (the same job llm.extract_guidance does with a key), then checked against the next calls and the reported quarterly numbers. Cached per ticker per quarter.",
+ "items": [
+  {
+   "said_in": "Q3 FY26 call (Feb 2026)",
+   "metric": "AUM growth FY26",
+   "promise": "22% to 23%",
+   "horizon": "FY26",
+   "quote": "Based on both these, we think the overall full year growth will be between 22% to 23%.",
+   "page": 4,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=6eb34dc2-bde9-4df5-8b93-aad3d461140e.pdf",
+   "actual": "22.5%",
+   "actual_quote": "...where the company grew by 22.5%.",
+   "actual_source": "https://cms-assets.bajajfinserv.in/is/content/bajajfinance/bajaj-finance-q4-fy26-earnings-conference-call-transcript?scl=1&fmt=pdf",
+   "actual_page": 4,
+   "verdict": "kept",
+   "why": "FY26 AUM grew 22.5%, inside the 22 to 23% range given a quarter earlier."
+  },
+  {
+   "said_in": "Q3 FY26 call (Feb 2026)",
+   "metric": "Credit cost FY27",
+   "promise": "165 to 175 bps",
+   "quote": "We foresee that the number next year as we enter could be anywhere between 165 to 175 basis points",
+   "page": 8,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=6eb34dc2-bde9-4df5-8b93-aad3d461140e.pdf",
+   "actual": "Re-set to 145 to 160 bps in April",
+   "actual_quote": "So on an annual basis, 175 goes down to 145 to 160? Rajeev Jain: That's perfect.",
+   "actual_source": "https://cms-assets.bajajfinserv.in/is/content/bajajfinance/bajaj-finance-q4-fy26-earnings-conference-call-transcript?scl=1&fmt=pdf",
+   "actual_page": 8,
+   "verdict": "moved",
+   "why": "Range lowered by about 20 bps one quarter later, partly from a change in how recoveries are presented. Compare like for like."
+  },
+  {
+   "said_in": "Q4 FY26 call (Apr 2026)",
+   "metric": "AUM growth FY27",
+   "promise": "22% to 24%",
+   "quote": "We have to ensure that we grow nicely, which is where the 22% to 24% guidance has been given.",
+   "page": 9,
+   "source": "https://cms-assets.bajajfinserv.in/is/content/bajajfinance/bajaj-finance-q4-fy26-earnings-conference-call-transcript?scl=1&fmt=pdf",
+   "actual": "26.5% YoY in Q2 FY27",
+   "actual_quote": "AUM, as you can see, grew by 26.5% to INR 5,84,624 crores",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=7873abcb-7f97-487d-a474-028b0a26feea.pdf",
+   "actual_page": 3,
+   "verdict": "on track",
+   "why": "Running above the top of the range at the half-year mark."
+  },
+  {
+   "said_in": "Q4 FY26 call (Apr 2026)",
+   "metric": "Credit cost FY27",
+   "promise": "1.45% to 1.60%",
+   "quote": "the credit cost guidance, Rajeev, you mentioned basically of 1.45% to 1.6%",
+   "page": 13,
+   "source": "https://cms-assets.bajajfinserv.in/is/content/bajajfinance/bajaj-finance-q4-fy26-earnings-conference-call-transcript?scl=1&fmt=pdf",
+   "actual": "1.56% in Q2 (1.32% before a ₹337 cr overlay)",
+   "actual_quote": "loan loss to average AUF improved to 1.56% from 1.88% last year",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=7873abcb-7f97-487d-a474-028b0a26feea.pdf",
+   "actual_page": 4,
+   "verdict": "on track",
+   "why": "Inside the range, but near the top once the macro overlay is counted."
+  },
+  {
+   "said_in": "Q4 FY26 call (Apr 2026)",
+   "metric": "ROE",
+   "promise": "19% to 20%",
+   "quote": "Return on equity came in at 20% in the current quarter, we continue to guide for 19% to 20%.",
+   "page": 7,
+   "source": "https://cms-assets.bajajfinserv.in/is/content/bajajfinance/bajaj-finance-q4-fy26-earnings-conference-call-transcript?scl=1&fmt=pdf",
+   "actual": "20.6% in Q2 FY27",
+   "actual_quote": "ROA for the quarter came in at 4.6% and ROE came in at 20.6%.",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=7873abcb-7f97-487d-a474-028b0a26feea.pdf",
+   "actual_page": 3,
+   "verdict": "on track",
+   "why": "Slightly above the guided band."
+  },
+  {
+   "said_in": "Q4 FY26 call (Apr 2026)",
+   "metric": "ROA FY27",
+   "promise": "4.4% to 4.6%",
+   "quote": "And the guidance that we are giving for next year is 4.4% to 4.6%.",
+   "page": 9,
+   "source": "https://cms-assets.bajajfinserv.in/is/content/bajajfinance/bajaj-finance-q4-fy26-earnings-conference-call-transcript?scl=1&fmt=pdf",
+   "actual": "4.6% in Q2 FY27",
+   "actual_quote": "ROA for the quarter came in at 4.6%",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=7873abcb-7f97-487d-a474-028b0a26feea.pdf",
+   "actual_page": 3,
+   "verdict": "on track",
+   "why": "At the top of the range."
+  },
+  {
+   "said_in": "Q1 FY27 call (Aug 2026)",
+   "metric": "Gold loan AUM by March 2027",
+   "promise": "₹29,000 to 31,000 cr, 2,700 to 2,800 branches",
+   "quote": "By year-end we foresee 2,700 to 2,800 branches, all goes well, maybe 3,000 branches and AUM of between INR29,000 crores and INR31,000 crores, all organic.",
+   "page": 4,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=b101e24e-b807-4c74-9025-90009f4b47a5.pdf",
+   "actual": null,
+   "verdict": "pending",
+   "why": "Due at the Q4 FY27 call."
+  }
+ ]
+}

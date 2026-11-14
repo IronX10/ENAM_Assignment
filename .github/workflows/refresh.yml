@@ -1,0 +1,33 @@
+# Refreshes data/*.json after market close on weekdays and commits it.
+# The app is static, so GitHub Pages (or any static host) serves the new feed with no server.
+name: refresh-data
+on:
+  schedule:
+    - cron: "30 11 * * 1-5"   # 17:00 IST, after the 15:30 close and the evening filing rush
+  workflow_dispatch:
+    inputs:
+      research:
+        description: "Optional: NSE tickers to research (space separated)"
+        required: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - name: Build feed and research
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # optional
+        run: |
+          if [ -n "${{ github.event.inputs.research }}" ]; then
+            python -m pipeline.build --research ${{ github.event.inputs.research }}
+          else
+            python -m pipeline.build --days 30
+          fi
+      - run: |
+          git config user.name "finn-bot"; git config user.email "finn-bot@users.noreply.github.com"
+          git add data/feed.json data/research && git commit -m "Refresh FINN data" || echo "no changes"
+          git push

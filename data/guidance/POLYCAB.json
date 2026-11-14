@@ -1,0 +1,72 @@
+{
+ "extracted_by": "Extracted at build time by Claude from the transcript text (the same job llm.extract_guidance does with a key), then checked against the next calls and the reported quarterly numbers. Cached per ticker per quarter.",
+ "items": [
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "Company EBITDA margin, near to mid term",
+   "promise": "12% to 14%",
+   "quote": "and in the near to mid term, we may expect 12% to 14% EBITDA.",
+   "page": 13,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=f66f17ac-c40f-4309-afca-3e66af0956a0.pdf",
+   "actual": "13.8% in Q1, 14.4% in Q2 FY27",
+   "actual_quote": "EBITDA margins expanded by more than 50 basis points sequentially to 14.4%",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=77b6d277-0ffc-440d-ba8a-2bd9bc3dc43e.pdf",
+   "actual_page": 6,
+   "verdict": "kept",
+   "why": "Both quarters since landed in the range, Q2 just above it."
+  },
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "Wires & cables growth vs market",
+   "promise": "1.5x market growth",
+   "quote": "we've committed in Cables & Wires, we will grow at 1.5x of market growth.",
+   "page": 11,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=f66f17ac-c40f-4309-afca-3e66af0956a0.pdf",
+   "actual": "Domestic W&C revenue +50% YoY, volume up mid-to-high single digits in Q2",
+   "actual_quote": "We delivered a volume growth of mid-to high single-digit range on top of a strong base",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=77b6d277-0ffc-440d-ba8a-2bd9bc3dc43e.pdf",
+   "actual_page": 6,
+   "verdict": "partly",
+   "why": "Value growth is far ahead, but most of it is copper prices. Volume growth was single digit, so 1.5x the market is unproven this quarter."
+  },
+  {
+   "said_in": "Q1 FY27 call (Jul 2026)",
+   "metric": "FMEG EBITDA margin",
+   "promise": "8% to 10% by FY2030",
+   "quote": "the ambition is that on a full year basis, we should be able to reach 8% to 10% of EBITDA margins on FMEG.",
+   "page": 19,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=e47a217c-cefa-4ff6-8e34-6bbd07d42b13.pdf",
+   "actual": "10.1% in Q2 FY27",
+   "actual_quote": "So if you see the 10.1% is already at the upper end of your projected targets.",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=77b6d277-0ffc-440d-ba8a-2bd9bc3dc43e.pdf",
+   "actual_page": 8,
+   "verdict": "on track",
+   "why": "One quarter at the top of a 2030 target. Needs a full year at this level to count."
+  },
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "Capex under Project Spring",
+   "promise": "₹6,000 to 8,000 cr by FY2030",
+   "quote": "in line with our Project Spring guidance of INR 6,000 crores to INR 8,000 crores capex by financial year 2030.",
+   "page": 12,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=f66f17ac-c40f-4309-afca-3e66af0956a0.pdf",
+   "actual": "About ₹1,500 cr spent in FY26",
+   "actual_quote": "FY26, we've invested almost INR 1,500 crores",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=f66f17ac-c40f-4309-afca-3e66af0956a0.pdf",
+   "actual_page": 12,
+   "verdict": "on track",
+   "why": "₹1,500 cr a year is the pace the range needs."
+  },
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "Exports share of revenue",
+   "promise": "More than 10% by FY2030",
+   "quote": "We remain firm on track to achieve our target of greater than 10% contribution from exports by financial year 2030.",
+   "page": 8,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=f66f17ac-c40f-4309-afca-3e66af0956a0.pdf",
+   "actual": null,
+   "verdict": "pending",
+   "why": "Long-dated; check the export share each year."
+  }
+ ]
+}

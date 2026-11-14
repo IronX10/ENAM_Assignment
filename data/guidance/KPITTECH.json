@@ -1,0 +1,61 @@
+{
+ "extracted_by": "Extracted at build time by Claude from the transcript text (the same job llm.extract_guidance does with a key), then checked against the next calls and the reported quarterly numbers. Cached per ticker per quarter.",
+ "items": [
+  {
+   "said_in": "Q2 FY26 call (Nov 2025)",
+   "metric": "EBITDA margin FY26",
+   "promise": "Maintain 21% for the full year",
+   "quote": "we are very confident that what we have talked about, that we will be in a position to maintain 21% EBITDA for the full year.",
+   "page": 5,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=bcf7302f-a4b8-4d59-8914-f53018acd102.pdf",
+   "actual": "20.8% for FY26",
+   "actual_quote": "EBITDA growth margin is for the year 20.8%.",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=70c85b6c-58e6-423f-9b32-50b17a948674.pdf",
+   "actual_page": 3,
+   "verdict": "missed",
+   "why": "Narrow miss of 20 bps, after being called 'very confident' two quarters before year end."
+  },
+  {
+   "said_in": "Q1 FY27 call (Aug 2026)",
+   "metric": "Margin recovery",
+   "promise": "Back to normal (20%+) margins by Q4 FY27",
+   "quote": "when you say you expect to go back to normal levels of margins by 4Q, you indicating that 20% plus EBITDA? Kishor Patil: Yes.",
+   "page": 16,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=d07f9c52-5c5a-443b-b239-6acd5e94b97a.pdf",
+   "actual": "17.8% in Q2; recovery now 'early next year'",
+   "actual_quote": "it will go up to some extent, every quarter, but, it will be early next year when we get there.",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=a7331811-fe14-4c79-896d-f0a9df901335.pdf",
+   "actual_page": 10,
+   "verdict": "moved",
+   "why": "Timeline pushed from Q4 FY27 to early FY28 one quarter after it was given."
+  },
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "Products & solutions revenue growth",
+   "promise": "30% year on year",
+   "quote": "We expect 30% year-on-year revenue growth in solution and products",
+   "page": 17,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=70c85b6c-58e6-423f-9b32-50b17a948674.pdf",
+   "actual": "Products +25% YoY in Q2 FY27",
+   "actual_quote": "Products have grown 5% quarter-on-quarter and 25% year-on-year.",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=a7331811-fe14-4c79-896d-f0a9df901335.pdf",
+   "actual_page": 4,
+   "verdict": "partly",
+   "why": "Growing fast but 5 points short of the stated pace."
+  },
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "EBITDA margin, medium term",
+   "promise": "22% to 24%",
+   "quote": "So we expect the EBITDA to be between 22% to 24% from where we are today.",
+   "page": 18,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=70c85b6c-58e6-423f-9b32-50b17a948674.pdf",
+   "actual": "17.8% in Q2 FY27",
+   "actual_quote": "our EBITDA has grown from 17.2% to 17.8%",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=a7331811-fe14-4c79-896d-f0a9df901335.pdf",
+   "actual_page": 4,
+   "verdict": "pending",
+   "why": "Due over two to three years, but margin has moved about 3 points further away since it was said."
+  }
+ ]
+}
