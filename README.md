@@ -37,7 +37,7 @@ Without a server (any static host), the app opens the saved snapshot and says "S
 
 1. Push this folder to a GitHub repository.
 2. On [render.com](https://render.com), choose **New → Blueprint** and pick the repository. `render.yaml` sets everything up. You get an address like `https://finn.onrender.com` that works on any phone or computer.
-3. Optional: add `ANTHROPIC_API_KEY` in Render's environment settings to grade management's promises for every company, not only the three cached ones.
+3. Optional: add `ANTHROPIC_API_KEY` in Render's environment settings to grade management's promises for any ticker typed in, not only the holdings that are already graded.
 
 Render's free plan sleeps after 15 idle minutes and takes about 30 seconds to wake. The saved snapshot covers that gap.
 
@@ -92,7 +92,7 @@ On the live data (252 filings over 30 days) this gives about 2 to 5 "act now" it
 | Promised vs delivered verdicts | One stronger-model call per company per quarter | ~3k tokens per company |
 | Everything | Disk cache by input hash and per ticker per quarter | Re-runs are free |
 
-The daily push run uses no model at all. Set `ANTHROPIC_API_KEY` to turn on the two model steps; `pipeline/llm.py` logs calls, tokens and cache hits per run. In this repo the guidance for Bajaj Finance, Polycab and KPIT was extracted and graded during the build by Claude reading the same transcript text, and is cached in `data/guidance/` with page references. Other companies show the forward-looking quotes FINN found, unverified, until the model step runs.
+The daily push run uses no model at all. Set `ANTHROPIC_API_KEY` to turn on the two model steps; `pipeline/llm.py` logs calls, tokens and cache hits per run. In this repo the guidance for 16 of the 18 holdings was extracted and graded during the build by Claude reading the same transcript text, and is cached in `data/guidance/` with the page of each promise and of the result it was checked against (or the filed quarterly results, where no later call is on file). The other two have nothing to grade: ITC has no call transcripts on file, and CDSL's calls contain no numeric promises. Several companies (TCS, Airtel, Eternal) give little numeric guidance, so they have only one or two rows; a promise that is not due yet is shown but not counted. Tickers outside the portfolio show the forward-looking quotes FINN found, unverified, until the model step runs.
 
 ## Deliberately left out
 
@@ -103,7 +103,7 @@ The daily push run uses no model at all. Set `ANTHROPIC_API_KEY` to turn on the 
 
 ## Next
 
-- Run the model step for every holding each quarter so all 18 have graded promises.
+- Run the model step every quarter so the graded promises stay current as new calls come in.
 - Hand-label 150 recent filings as "matters / doesn't" and report precision of Act now against them.
 - Learn from "less like this": nudge category weights per investor instead of only muting.
 - A 60-second morning audio brief of the Act now items.

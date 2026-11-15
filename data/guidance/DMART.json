@@ -1,0 +1,18 @@
+{
+ "extracted_by": "Extracted at build time by Claude from the transcript text (the same job llm.extract_guidance does with a key), then checked against the next calls and the reported quarterly numbers. Cached per ticker per quarter.",
+ "items": [
+  {
+   "said_in": "Q1 FY27 call (Aug 2026)",
+   "metric": "Net margin",
+   "promise": "Around 5%",
+   "quote": "And so therefore, 15% kind of a gross margin and let's say around a 5% kind of a net margin should be the North Star for this business even in the future.",
+   "page": 19,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=deef7a97-c6ee-4727-804d-f00f23f54f71.pdf",
+   "actual": "4.2% in H1 FY27 (4.6% in Q1, 3.8% in Q2)",
+   "verdict": "partly",
+   "why": "Filed results show net profit of Rs 1,603 crore on Rs 38,439 crore of revenue in the first half, a 4.2% margin.",
+   "actual_source": "https://www.screener.in/company/DMART/consolidated/#quarters"
+  }
+ ],
+ "note": "DMart rarely holds calls; only the August 2026 call is on file, and its store-opening goal cannot yet be checked."
+}

@@ -1,0 +1,18 @@
+{
+ "extracted_by": "Extracted at build time by Claude from the transcript text (the same job llm.extract_guidance does with a key), then checked against the next calls and the reported quarterly numbers. Cached per ticker per quarter.",
+ "items": [
+  {
+   "said_in": "Q4 FY26 call (Jun 2026)",
+   "metric": "Revenue growth",
+   "promise": "15% to 20% a year over three to five years",
+   "quote": "So, this guidance of 15 %-20%, you look more that we have the way we are running business, the way Indian macros are behaving, we believe 15% to 20%, three to five-year kind of horizon is certainly to be delivered on a CAGR basis kind of a thing.",
+   "page": 11,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=1a3bc0e3-c7ff-4887-a18a-f73fd400e8ca.pdf",
+   "actual": "Up 19.1% in H1 FY27 (Q2 +10.1%)",
+   "verdict": "on track",
+   "why": "Filed results show first-half revenue up 19.1% (Rs 41,970 crore against Rs 35,248 crore), though Q2 alone grew 10.1%.",
+   "actual_source": "https://www.screener.in/company/TITAN/consolidated/#quarters"
+  }
+ ],
+ "note": "Titan gives growth ranges but no numeric margin guidance; it says it anchors jewellery margin around 11%."
+}

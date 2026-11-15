@@ -1,0 +1,30 @@
+{
+ "extracted_by": "Extracted at build time by Claude from the transcript text (the same job llm.extract_guidance does with a key), then checked against the next calls and the reported quarterly numbers. Cached per ticker per quarter.",
+ "items": [
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "FY27 revenue growth",
+   "promise": "10% to 12%",
+   "quote": "But we are confident that LCA and HTT-40 will be delivered, and whatever g uidance we are giving, 10% to 12%, we'll be able to maintain it.",
+   "page": 19,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=344500e7-2fff-4cc6-a792-c4693e0340f6.pdf",
+   "actual": "Up 14.7% in H1 FY27",
+   "verdict": "on track",
+   "why": "Filed results show first-half revenue of Rs 13,128 crore, up 14.7% on a year earlier.",
+   "actual_source": "https://www.screener.in/company/HAL/consolidated/#quarters"
+  },
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "EBITDA margin",
+   "promise": "Around 30% to 31%",
+   "quote": "And the EBITDA ma rgin, we have always maintained around 30%, 31%, and it will be maintained.",
+   "page": 6,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=344500e7-2fff-4cc6-a792-c4693e0340f6.pdf",
+   "actual": "About 24.9% in H1 FY27",
+   "verdict": "partly",
+   "why": "Operating margin on filed results was 27.7% in Q1 and 22.8% in Q2, about 25% for the half; HAL's fourth quarter is usually its biggest.",
+   "actual_source": "https://www.screener.in/company/HAL/consolidated/#quarters"
+  }
+ ],
+ "note": "HAL's latest transcript on file is from May 2026, so results come from the filed quarterly numbers."
+}

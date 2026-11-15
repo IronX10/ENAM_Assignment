@@ -415,6 +415,12 @@
 
   const V = { kept: ["Kept", "good"], "on track": ["On track", "good"], partly: ["Partly", "mid"], missed: ["Missed", "bad"], moved: ["Moved", "bad"], pending: ["Not due", "wait"] };
 
+  function credLine(cred) {
+    const c = cred.counts || {}, good = (c.kept || 0) + (c["on track"] || 0);
+    const rest = [["partly", "partly"], ["missed", "missed"], ["moved", "moved"]].filter(([k]) => c[k]).map(([k, l]) => `${c[k]} ${l}`);
+    return `${good} of ${cred.of} ${cred.of === 1 ? "promise" : "promises"} kept or on track${rest.length ? "; " + rest.join(", ") : ""}.`;
+  }
+
   function researchBody(r) {
     const s = r.snapshot, t = r.trajectory, c = r.cash, b = r.balance, g = r.guidance || {}, items = g.items || [];
     const cred = r.verdict && r.verdict.credibility, out = [];
@@ -426,13 +432,15 @@
     out.push(claimsBlock(r.claims));
     if (g.mode === "extracted" && items.length) {
       out.push(`<div class="block"><h3>What they promised, and what happened</h3>
-        ${cred ? `<p class="score-line">${cred.score % 1 ? cred.score.toFixed(1) : cred.score} of ${cred.of} promises kept or on track.</p>` : ""}
+        ${cred ? `<p class="score-line">${credLine(cred)}</p>` : ""}
         ${items.map((x) => { const [vl, vc] = V[x.verdict] || ["", "wait"]; return `<div class="promise">
           <div class="h"><span>${esc(x.metric)}</span><span class="v ${vc}">${vl}</span></div>
           <dl class="kv"><dt>Promised</dt><dd>${esc(x.promise)} <span class="dim">(${esc(x.said_in)})</span></dd><dt>Result</dt><dd>${esc(x.actual || "Not due yet")}</dd></dl>
           ${x.why ? `<p class="why">${esc(x.why)}</p>` : ""}
-          <details><summary>Their words</summary><blockquote>“${esc(x.quote)}” <a href="${esc(x.source)}" target="_blank" rel="noopener">page ${x.page ?? "?"}</a></blockquote>
-          ${x.actual_quote ? `<blockquote>“${esc(x.actual_quote)}” <a href="${esc(x.actual_source)}" target="_blank" rel="noopener">page ${x.actual_page ?? "?"}</a></blockquote>` : ""}</details></div>`; }).join("")}</div>`);
+          <details><summary>Their words</summary><blockquote>“${esc(x.quote)}” <a href="${esc(x.source)}" target="_blank" rel="noopener">${esc(x.said_in)}, page ${x.page ?? "?"}</a></blockquote>
+          ${x.actual_quote ? `<blockquote>“${esc(x.actual_quote)}” <a href="${esc(x.actual_source)}" target="_blank" rel="noopener">${esc(x.actual_said_in || "Later call")}, page ${x.actual_page ?? "?"}</a></blockquote>`
+            : x.actual_source ? `<p class="note" style="margin-top:6px"><a href="${esc(x.actual_source)}" target="_blank" rel="noopener">Reported quarterly results</a></p>` : ""}</details></div>`; }).join("")}
+        <p class="note" style="margin-top:8px">${g.note ? esc(g.note) + " " : ""}Promises are read from the company's own calls and graded against what it reported later. Ones not due yet are not counted.</p></div>`);
     } else if (items.length) {
       out.push(`<div class="block"><h3>What management said on recent calls</h3>
         ${items.slice(0, 4).map((x) => `<div class="promise"><p class="why">“${esc(x.quote)}”</p><a class="note" href="${esc(x.source)}" target="_blank" rel="noopener">${esc(x.said_in)} call, page ${x.page}</a></div>`).join("")}

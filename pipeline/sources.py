@@ -287,6 +287,16 @@ def screener(symbol, variants=("consolidated/", "")):
     return out
 
 
+def _direct_pdf(url):
+    """Some companies link a viewer page (site.com/pdf-viewer?pdf=/path/file.pdf); the PDF itself is at /path/file.pdf."""
+    m = re.match(r"(https?://[^/]+)/[^?]*pdf-viewer\?pdf=([^&]+)", url or "")
+    if not m:
+        return url
+    from urllib.parse import unquote
+    path = unquote(m.group(2))
+    return path if path.startswith("http") else m.group(1) + "/" + path.lstrip("/")
+
+
 def _screener(symbol, variants):
     html = soup = variant = None
     for variant in variants:
@@ -361,7 +371,7 @@ def _screener(symbol, variants):
                 elif title.startswith("Concall"):
                     period = li.find("div")
                     period = period.get_text(strip=True) if period else ""
-                    tr = next((a.get("href") for a in links if a.get_text(strip=True) == "Transcript"), None)
+                    tr = _direct_pdf(next((a.get("href") for a in links if a.get_text(strip=True) == "Transcript"), None))
                     ppt = next((a.get("href") for a in links if a.get_text(strip=True) == "PPT"), None)
                     docs["concalls"].append({"period": period, "transcript": tr, "ppt": ppt})
     out["docs"] = docs

@@ -1,0 +1,21 @@
+{
+ "extracted_by": "Extracted at build time by Claude from the transcript text (the same job llm.extract_guidance does with a key), then checked against the next calls and the reported quarterly numbers. Cached per ticker per quarter.",
+ "items": [
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "Blinkit (quick commerce) order value growth, medium term",
+   "promise": "60% a year",
+   "quote": "We've given overall guidance of 60% CAGR and that would obviously mean some reasonable store expansion, but we're not planning to give out any specific number guidance on that.",
+   "page": 4,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=60af607c-5f1b-4d5d-8425-4929efa6aad1.pdf",
+   "actual": "79% year on year in Q2 FY27",
+   "verdict": "on track",
+   "why": "Blinkit's order value grew 79% in Q2, a figure raised on the October call that management did not dispute, and it said growth would pick up further from December.",
+   "actual_quote": "And then when you're guiding for growth to pick up in Blinkit from 79%, are you specifically referring to the December quarter, or is that a more generic comment for the next 12 months?",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=64f36e3b-87e9-426e-be3e-515dca4525d2.pdf",
+   "actual_page": 8,
+   "actual_said_in": "Q2 FY27 call (Oct 2026)"
+  }
+ ],
+ "note": "Eternal publishes its numbers in a shareholder letter; the call transcripts are questions and answers only, so few promises can be checked."
+}

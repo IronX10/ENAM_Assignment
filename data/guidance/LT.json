@@ -1,0 +1,33 @@
+{
+ "extracted_by": "Extracted at build time by Claude from the transcript text (the same job llm.extract_guidance does with a key), then checked against the next calls and the reported quarterly numbers. Cached per ticker per quarter.",
+ "items": [
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "FY27 order inflow growth",
+   "promise": "10% to 12%",
+   "quote": "Based on this visibility and the opportunities we are pursuing, we expect the group order inflows to grow in the range of 10% to 12% in FY27.",
+   "page": 13,
+   "source": "https://investors.larsentoubro.com/upload/Analysttrans/FY2026AnalysttransL&T%20Q4%20FY26%20Earnings%20Call%20Transcript.pdf",
+   "actual": "Up 14% year on year in Q1 FY27",
+   "verdict": "on track",
+   "why": "Q1 order inflows grew 14%, and management said in July it remained on track for the range.",
+   "actual_quote": "Reflecting this momentum, the group order inflows at Rs. 1,080 billion, registered a 14% Y-on-Y growth.",
+   "actual_source": "https://investors.larsentoubro.com/upload/Analysttrans/FY2027AnalysttransL&T-Earnings-Jul28-2026.pdf",
+   "actual_page": 4,
+   "actual_said_in": "Q1 FY27 call (Jul 2026)"
+  },
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "FY27 revenue growth",
+   "promise": "10% to 12%",
+   "quote": "On Revenue, we expect growth to be in the range of 10% to 12% for FY27.",
+   "page": 13,
+   "source": "https://investors.larsentoubro.com/upload/Analysttrans/FY2026AnalysttransL&T%20Q4%20FY26%20Earnings%20Call%20Transcript.pdf",
+   "actual": "Up 11.4% in H1 FY27 (Q1 +6.7%, Q2 +15.8%)",
+   "verdict": "on track",
+   "why": "Filed results show first-half revenue of Rs 1,46,692 crore, up 11.4% on Rs 1,31,663 crore a year earlier, inside the range.",
+   "actual_source": "https://www.screener.in/company/LT/consolidated/#quarters"
+  }
+ ],
+ "note": "No transcript of the October 2026 call is on file, so H1 revenue comes from the filed quarterly results."
+}

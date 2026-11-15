@@ -1,0 +1,21 @@
+{
+ "extracted_by": "Extracted at build time by Claude from the transcript text (the same job llm.extract_guidance does with a key), then checked against the next calls and the reported quarterly numbers. Cached per ticker per quarter.",
+ "items": [
+  {
+   "said_in": "Q4 FY26 call (Apr 2026)",
+   "metric": "Margin hit from annual wage increments",
+   "promise": "150 to 200 basis points",
+   "quote": "Samir Seksaria: On the wage increments, you should expect a similar impact on what we have seen in the past annual increment cycle, which had been in the range of 150 to 200 basis points.",
+   "page": 30,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=07ae2d32-1050-4e80-96ff-eb2d98378d4e.pdf",
+   "actual": "170 basis points in Q1 FY27",
+   "verdict": "kept",
+   "why": "The Q1 increments took 170 basis points off the margin, inside the range; margin then held at 24% in Q2.",
+   "actual_quote": "In Q1, we rolled out annual increments for our global workforce, which impacted margins by 170 bps .",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=27523cab-de62-4f78-939a-6d9853bbd060.pdf",
+   "actual_page": 5,
+   "actual_said_in": "Q1 FY27 call (Jul 2026)"
+  }
+ ],
+ "note": "TCS does not give numeric revenue or margin guidance, so only this cost item can be checked."
+}

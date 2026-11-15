@@ -1,0 +1,50 @@
+{
+ "extracted_by": "Extracted at build time by Claude from the transcript text (the same job llm.extract_guidance does with a key), then checked against the next calls and the reported quarterly numbers. Cached per ticker per quarter.",
+ "items": [
+  {
+   "said_in": "Q1 FY27 call (Aug 2026)",
+   "metric": "Q2 smartphone volume growth over Q1",
+   "promise": "20% to 25%",
+   "quote": "Our market position, customer engagement and manufacturing capabilities remain intact, and we expect 20% to 25% volume g rowth quarter- on-quarter growth as consumer demand strengthens and we have a strong order book.",
+   "page": 4,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=7ce2ca16-3043-48f4-97f9-a62a6a086c2f.pdf",
+   "actual": "About 9.7 million in Q2 against 7.5 million in Q1",
+   "verdict": "kept",
+   "why": "Smartphone volumes went from about 7.5 million in Q1 to about 9.7 million in Q2, roughly 29% higher.",
+   "actual_quote": "So total in H1, that is Q1 and Q2 combined, up to September, we have done approximately 17.2 million.",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=995a3a71-4a1e-4c1f-a29a-6c6747e4ca10.pdf",
+   "actual_page": 9,
+   "actual_said_in": "Q2 FY27 call (Nov 2026)"
+  },
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "New Noida facility start",
+   "promise": "Operations from Q2 FY27",
+   "quote": "Construction of our 1 million square feet facility in Noida with higher capacities for our anchor customers is nearing completion, and we expect the operation to commence by Q2 this fiscal.",
+   "page": 5,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=38b72f07-55a6-4503-91fd-ed3b2c209e96.pdf",
+   "actual": "Now expected from Q3 FY27",
+   "verdict": "moved",
+   "why": "In October the start was pushed to Q3 FY27.",
+   "actual_quote": "Construction of a 1 million square feet facility in Noida with higher capacities has almost been completed, and we expect the operations to commence from Q3 of this fiscal.",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=995a3a71-4a1e-4c1f-a29a-6c6747e4ca10.pdf",
+   "actual_page": 5,
+   "actual_said_in": "Q2 FY27 call (Nov 2026)"
+  },
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "Camera module capacity",
+   "promise": "180 to 190 million a year within 15 to 18 months",
+   "quote": "We will be expand ing the capacities of camera module and a subsidiary Q Tech, which is an ECMS beneficiary for smartphones from 70 million units annually to around 180 million units to 190 million units annually over the next 15 to 18 months, largely catering to our captiv e smartphone volumes in addition to deepening the level of manufacturing, capturing more value add in India.",
+   "page": 4,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=38b72f07-55a6-4503-91fd-ed3b2c209e96.pdf",
+   "actual": "120 million a year by October 2026",
+   "verdict": "on track",
+   "why": "Capacity is already at 120 million, and the company still expects 180 to 190 million by next fiscal.",
+   "actual_quote": "We have already expanded our capacities from 80 million to 120 million annually, along with deepened manufacturing, which is margin accretive, and will further expand its capacity to 180 to 190 million units annually by next fiscal.",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=995a3a71-4a1e-4c1f-a29a-6c6747e4ca10.pdf",
+   "actual_page": 5,
+   "actual_said_in": "Q2 FY27 call (Nov 2026)"
+  }
+ ]
+}

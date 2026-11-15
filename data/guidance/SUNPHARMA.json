@@ -1,0 +1,50 @@
+{
+ "extracted_by": "Extracted at build time by Claude from the transcript text (the same job llm.extract_guidance does with a key), then checked against the next calls and the reported quarterly numbers. Cached per ticker per quarter.",
+ "items": [
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "FY27 consolidated sales growth",
+   "promise": "High single digit",
+   "quote": "On the guidance, we expect high single -digit consolidated top line growth for FY27 based on our current understanding of the regulatory and macro environment.",
+   "page": 6,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=287022b2-8de5-487d-8d0d-77b819ee3eb4.pdf",
+   "actual": "Up 11% in H1 FY27",
+   "verdict": "on track",
+   "why": "First-half sales grew 11%, ahead of the guidance, with half the year still to go.",
+   "actual_quote": "For the first half, sales were at INR3,12,836 million, registering a growth of 11% over the first half last year.",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=fe431adc-0e1a-48ee-9c2b-b6e39cba04e4.pdf",
+   "actual_page": 4,
+   "actual_said_in": "Q2 FY27 call (Nov 2026)"
+  },
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "FY27 R&D spend",
+   "promise": "6% to 7% of sales",
+   "quote": "We expect our FY27 R&D spend to be 6% to 7% of the sales for the next year.",
+   "page": 6,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=287022b2-8de5-487d-8d0d-77b819ee3eb4.pdf",
+   "actual": "5.4% in Q1, 4.8% in Q2 FY27",
+   "verdict": "partly",
+   "why": "R&D ran at 5.4% of sales in Q1 and 4.8% in Q2; management says the second half will catch up some of it.",
+   "actual_quote": "Consolidated investments towards R&D for Q2 '27 stands at INR7,784 million or 4.8% of sales.",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=fe431adc-0e1a-48ee-9c2b-b6e39cba04e4.pdf",
+   "actual_page": 6,
+   "actual_said_in": "Q2 FY27 call (Nov 2026)"
+  },
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "FY27 effective tax rate",
+   "promise": "About 25%",
+   "quote": "We expect the effective tax rate to be in the range of 25%.",
+   "page": 17,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=287022b2-8de5-487d-8d0d-77b819ee3eb4.pdf",
+   "actual": "27.8% in Q1, 28.3% in Q2 FY27",
+   "verdict": "missed",
+   "why": "The tax rate was 27.8% in Q1 and 28.3% in Q2, well above the guided level.",
+   "actual_quote": "Effective tax rate for the quarter was 28.3% versus 24.7% in Q2 FY26.",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=fe431adc-0e1a-48ee-9c2b-b6e39cba04e4.pdf",
+   "actual_page": 4,
+   "actual_said_in": "Q2 FY27 call (Nov 2026)"
+  }
+ ]
+}

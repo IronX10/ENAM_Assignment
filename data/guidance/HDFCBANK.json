@@ -1,0 +1,20 @@
+{
+ "extracted_by": "Extracted at build time by Claude from the transcript text (the same job llm.extract_guidance does with a key), then checked against the next calls and the reported quarterly numbers. Cached per ticker per quarter.",
+ "items": [
+  {
+   "said_in": "Q4 FY26 call (Apr 2026)",
+   "metric": "Business banking (MSME) loan growth",
+   "promise": "18% to 21% a year",
+   "quote": "If you also see the pack, which my colleagues have put out, we have grown our business banking, which is mainly representative of our MSME, we've grown at about 20% year -on-year, and that will continue to also be in that range of 18% to 20%, 21%, depending upon, obviously, some of the developments in the economy.",
+   "page": 12,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=a77abbbb-954a-4221-8240-67bf0da6ba1c.pdf",
+   "actual": "23.5% year on year at September 2026",
+   "verdict": "kept",
+   "why": "By September the MSME and mid-market book was growing 23.5% a year, above the range.",
+   "actual_quote": "September'26 EOP loan growth has grown 23.5 % year -on-year compared to 17% to 18% year-on-year growth levels seen in the last few quarters.",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=d7e45614-ae12-4bb9-b92d-623b3a63f166.pdf",
+   "actual_page": 4,
+   "actual_said_in": "Q2 FY27 call (Oct 2026)"
+  }
+ ]
+}

@@ -1,0 +1,21 @@
+{
+ "extracted_by": "Extracted at build time by Claude from the transcript text (the same job llm.extract_guidance does with a key), then checked against the next calls and the reported quarterly numbers. Cached per ticker per quarter.",
+ "items": [
+  {
+   "said_in": "Q4 FY26 call (May 2026)",
+   "metric": "Data centre capacity",
+   "promise": "1 gigawatt in a few years",
+   "quote": "We are only at about 10 % to 12% share and for a Company of our size , we are not satisfied with that kind of presence , so we really need to step up our game in data centers and our ambition is to get to a gigawatt as we mentioned in a few years ’ time but that game will not end there , we will continue to build out and the data cent er market has 50% to 60% of its demand coming out of Mumbai , so land will need to be acquired and data centers will need to be built.",
+   "page": 6,
+   "source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=e76d0ca2-740a-4e0f-986a-2ad0ad39d515.pdf",
+   "actual": "Land bought for it in Q2 FY27",
+   "verdict": "pending",
+   "why": "Too early to grade; in Q2 it bought a Rs 2,900 crore land parcel for this capacity.",
+   "actual_quote": "In addition, we invested about 2,900 Crores in a strategic land parcel to pursue our one-gigawatt data center capacity ambition.",
+   "actual_source": "https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=1ff3e14f-7e97-4074-89c7-049408721c5e.pdf",
+   "actual_page": 3,
+   "actual_said_in": "Q2 FY27 call (Nov 2026)"
+  }
+ ],
+ "note": "Airtel does not give numeric revenue, margin or capex guidance, so there is little to grade."
+}
