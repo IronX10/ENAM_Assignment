@@ -96,7 +96,7 @@ The daily push run uses no model at all. Set `ANTHROPIC_API_KEY` to turn on the 
 
 ## Deliberately left out
 
-- Intraday prices and real phone push notifications. The badge on Today stands in; a PWA notification is the next step.
+- Real phone push notifications. The "Needs you" section at the top of Today stands in; a PWA notification is the next step.
 - User accounts. Preferences live in the browser.
 - LinkedIn lookups for incoming executives. The SEBI-mandated profile in the filing is primary, free and already on file.
 - Four of the eight research blocks (narrative, full guidance table for all companies, segment deep-dive, a chat box). Promised vs delivered is the one the brief values most, so it got the depth.
