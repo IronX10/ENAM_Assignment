@@ -6,7 +6,7 @@ import re
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 css = open(os.path.join(ROOT, "app", "styles.css"), encoding="utf-8").read()
 js = open(os.path.join(ROOT, "app", "app.js"), encoding="utf-8").read()
-page = f"""<title>Delta</title>
+page = f"""<title>FINN</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 {css}
@@ -19,5 +19,5 @@ page = f"""<title>Delta</title>
 </script>
 """
 os.makedirs(os.path.join(ROOT, "dist"), exist_ok=True)
-open(os.path.join(ROOT, "dist", "delta.html"), "w", encoding="utf-8").write(page)
-print("dist/delta.html", len(page))
+open(os.path.join(ROOT, "dist", "finn.html"), "w", encoding="utf-8").write(page)
+print("dist/finn.html", len(page))

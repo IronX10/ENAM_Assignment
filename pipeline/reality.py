@@ -4,7 +4,7 @@ Two checks, both computed in code with no model:
 
 1. Claims check. Management opens every earnings call by reading out the
    quarter's numbers ("revenue grew 11.2% year on year", "EBITDA margin was
-   14.4%", "net profit of Rs 3,224 crore"). Delta pulls those sentences from the
+   14.4%", "net profit of Rs 3,224 crore"). FINN pulls those sentences from the
    company's own transcript and recomputes each figure from the reported
    quarterly results. Every row carries the quote, the page and both sources.
 
@@ -287,7 +287,7 @@ def _sentence_for(c, actual, qlabel):
 
 def _best(c, reps, i):
     """Try the statements the company could mean: consolidated, then standalone; for an unstated basis, a year ago then
-    the last quarter. Returns the closest reading so a mismatch is never down to Delta picking the wrong one."""
+    the last quarter. Returns the closest reading so a mismatch is never down to FINN picking the wrong one."""
     tries = []
     for name, rep in reps:
         variants = [c]

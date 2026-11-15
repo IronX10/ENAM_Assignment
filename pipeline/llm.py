@@ -1,6 +1,6 @@
 """Optional model calls, routed by cost.
 
-Delta runs without any key: rules and code produce every number, and NSE's own
+FINN runs without any key: rules and code produce every number, and NSE's own
 filing summaries fill the card text. With a key, two jobs use a model:
 
   cheap model  -> compress a bio, extract guidance rows from transcript snippets
@@ -15,10 +15,8 @@ import os
 
 import requests
 
-from .sources import setting
-
-CHEAP = setting("CHEAP_MODEL", "claude-haiku-5-5")
-STRONG = setting("STRONG_MODEL", "claude-sonnet-5-5")
+CHEAP = os.environ.get("FINN_CHEAP_MODEL", "claude-haiku-5-5")
+STRONG = os.environ.get("FINN_STRONG_MODEL", "claude-sonnet-5-5")
 KEY = os.environ.get("ANTHROPIC_API_KEY")
 _CACHE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "cache", "llm")
 os.makedirs(_CACHE, exist_ok=True)

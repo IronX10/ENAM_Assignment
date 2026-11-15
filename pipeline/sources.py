@@ -15,12 +15,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # Live mode (the server) refreshes filings and prices every few minutes; batch mode caches longer.
-def setting(name, default=None):
-    """DELTA_<name> from the environment; FINN_<name> still works, from before the rename."""
-    return os.environ.get("DELTA_" + name) or os.environ.get("FINN_" + name) or default
-
-
-LIVE_MIN = float(setting("LIVE_TTL_MIN", "0") or 0)
+LIVE_MIN = float(os.environ.get("FINN_LIVE_TTL_MIN", "0") or 0)
 
 
 def _ttl(batch_hours):
@@ -38,7 +33,7 @@ os.makedirs(CACHE, exist_ok=True)
 
 _S = requests.Session()
 _S.headers.update({
-    "User-Agent": "Mozilla/5.0 (Delta prototype; research use)",
+    "User-Agent": "Mozilla/5.0 (FINN prototype; research use)",
     "Accept-Language": "en-US,en;q=0.9",
 })
 

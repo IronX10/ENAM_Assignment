@@ -1,6 +1,6 @@
-# Delta
+# FINN
 
-Built for ENAM's FINN challenge. A mobile-first investing agent for one investor's portfolio. It opens on a triaged feed of what changed across 18 NSE holdings, and one tap takes any company into a research view built only from the company's own filings.
+A mobile-first investing agent for one investor's portfolio. It opens on a triaged feed of what changed across 18 NSE holdings, and one tap takes any company into a research view built only from the company's own filings.
 
 Three screens, nothing else:
 
@@ -36,7 +36,7 @@ Without a server (any static host), the app opens the saved snapshot and says "S
 ### Put it online (free)
 
 1. Push this folder to a GitHub repository.
-2. On [render.com](https://render.com), choose **New → Blueprint** and pick the repository. `render.yaml` sets everything up. You get an address like `https://delta-xxxx.onrender.com` that works on any phone or computer.
+2. On [render.com](https://render.com), choose **New → Blueprint** and pick the repository. `render.yaml` sets everything up. You get an address like `https://finn.onrender.com` that works on any phone or computer.
 3. Optional: add `ANTHROPIC_API_KEY` in Render's environment settings to grade management's promises for any ticker typed in, not only the holdings that are already graded.
 
 Render's free plan sleeps after 15 idle minutes and takes about 30 seconds to wake. The saved snapshot covers that gap.
@@ -55,7 +55,7 @@ Concall transcripts┴─> pipeline/research.py + reality.py
 
 The app only reads JSON. A slow or blocked source can never break it.
 
-**Push.** Each filing is classified by rules on the exchange's own subject line (17 categories from the brief's reference, plus subtypes such as "CFO resigns" or "order win"). Material items are enriched by reading the filing PDF: the board's results numbers, the brief profile SEBI requires in appointment letters, the authority and amount in a legal order. A results day produces four to six filings (outcome, press release, deck, newspaper ad, call recording); Delta folds them into one card. A price move is joined to the filing that explains it; a move with no filing becomes its own card, which is often the most interesting thing in the feed.
+**Push.** Each filing is classified by rules on the exchange's own subject line (17 categories from the brief's reference, plus subtypes such as "CFO resigns" or "order win"). Material items are enriched by reading the filing PDF: the board's results numbers, the brief profile SEBI requires in appointment letters, the authority and amount in a legal order. A results day produces four to six filings (outcome, press release, deck, newspaper ad, call recording); FINN folds them into one card. A price move is joined to the filing that explains it; a move with no filing becomes its own card, which is often the most interesting thing in the feed.
 
 **Priority** is a transparent formula, not a model's opinion:
 
@@ -92,7 +92,7 @@ On the live data (252 filings over 30 days) this gives about 2 to 5 "act now" it
 | Promised vs delivered verdicts | One stronger-model call per company per quarter | ~3k tokens per company |
 | Everything | Disk cache by input hash and per ticker per quarter | Re-runs are free |
 
-The daily push run uses no model at all. Set `ANTHROPIC_API_KEY` to turn on the two model steps; `pipeline/llm.py` logs calls, tokens and cache hits per run. In this repo the guidance for 16 of the 18 holdings was extracted and graded during the build by Claude reading the same transcript text, and is cached in `data/guidance/` with the page of each promise and of the result it was checked against (or the filed quarterly results, where no later call is on file). The other two have nothing to grade: ITC has no call transcripts on file, and CDSL's calls contain no numeric promises. Several companies (TCS, Airtel, Eternal) give little numeric guidance, so they have only one or two rows; a promise that is not due yet is shown but not counted. Tickers outside the portfolio show the forward-looking quotes Delta found, unverified, until the model step runs.
+The daily push run uses no model at all. Set `ANTHROPIC_API_KEY` to turn on the two model steps; `pipeline/llm.py` logs calls, tokens and cache hits per run. In this repo the guidance for 16 of the 18 holdings was extracted and graded during the build by Claude reading the same transcript text, and is cached in `data/guidance/` with the page of each promise and of the result it was checked against (or the filed quarterly results, where no later call is on file). The other two have nothing to grade: ITC has no call transcripts on file, and CDSL's calls contain no numeric promises. Several companies (TCS, Airtel, Eternal) give little numeric guidance, so they have only one or two rows; a promise that is not due yet is shown but not counted. Tickers outside the portfolio show the forward-looking quotes FINN found, unverified, until the model step runs.
 
 ## Deliberately left out
 

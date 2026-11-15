@@ -1,4 +1,4 @@
-/* Delta app. Talks to the Delta server for live data (api/live every 30 s, api/feed when it changes, api/research);
+/* FINN app. Talks to the FINN server for live data (api/live every 30 s, api/feed when it changes, api/research);
    if no server is reachable it opens the last saved snapshot in data/ and says so. */
 (function () {
   "use strict";
@@ -6,8 +6,8 @@
   const $ = (s, el = document) => el.querySelector(s);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const store = {
-    get(k, d) { try { const v = localStorage.getItem("delta:" + k) ?? localStorage.getItem("finn:" + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },  // finn: kept from before the rename
-    set(k, v) { try { localStorage.setItem("delta:" + k, JSON.stringify(v)); } catch (e) { /* private mode */ } },
+    get(k, d) { try { const v = localStorage.getItem("finn:" + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("finn:" + k, JSON.stringify(v)); } catch (e) { /* private mode */ } },
   };
 
   const CAT = {
@@ -107,7 +107,7 @@
   const allItems = () => S.feed.events.concat(priceItems());
 
   // ---------------------------------------------------------------- status line
-  // S.live: a Delta server is answering. S.feedLive: that server has finished its first try at refreshing the filings.
+  // S.live: a FINN server is answering. S.feedLive: that server has finished its first try at refreshing the filings.
   // For the first couple of minutes after the server wakes it serves live prices with the filings it was saved with.
   const statusClass = () => "status" + (S.live && S.feedLive ? " live" + (S.marketOpen ? " open" : "") : "");
   function statusLine() {
@@ -196,7 +196,7 @@
         <span class="p n" data-q="${h.symbol}" data-f="price">${priceHTML(q)}</span><span class="c n ${cls(q.chg)}" data-q="${h.symbol}" data-f="chg">${pct(q.chg, 2)}</span></button>`;
     }).join("");
 
-    return `<header class="top"><div class="bar"><span class="brand">Delta</span>${statusLine()}</div>
+    return `<header class="top"><div class="bar"><span class="brand">FINN</span>${statusLine()}</div>
         <p class="date">${new Date().toLocaleDateString("en-IN", { ...IST, weekday: "long", day: "numeric", month: "long" })}</p>
         <h1>${title}</h1>
         ${niftyLine()}
@@ -224,7 +224,7 @@
     const list = S.newsOpen ? all.slice(0, 40) : all.slice(0, 5);
     return `<section class="sec"><h2><span>In the news</span><span>${all.length}</span></h2><div class="rows">${list.map((n) => newsRow(n, true)).join("")}
       ${all.length > 5 ? `<button class="more" data-news aria-expanded="${S.newsOpen}"><span>${S.newsOpen ? "Fewer headlines" : `All ${Math.min(all.length, 40)} headlines`}</span><span></span></button>` : ""}</div>
-      <p class="note">Headlines from Google News, for context. Delta's ranking and research use only company filings.</p></section>`;
+      <p class="note">Headlines from Google News, for context. FINN's ranking and research use only company filings.</p></section>`;
   }
 
   // ---------------------------------------------------------------- detail
@@ -285,7 +285,7 @@
       const m = e.magnitude;
       b.push(`<div class="block"><h3>How big</h3><div class="trio"><div><b>₹${inr(m.amount_cr)} cr</b><span>${m.band ? esc(m.band) + " band" : "amount"}</span></div>
         ${m.pct_revenue != null ? `<div><b>${m.pct_revenue}%</b><span>of a year's revenue</span></div>` : ""}${m.pct_mcap != null ? `<div><b>${m.pct_mcap}%</b><span>of market value</span></div>` : ""}</div>
-        ${m.band ? `<p class="note" style="margin-top:8px">L&T discloses order size as a band. Delta uses its midpoint.</p>` : ""}</div>`);
+        ${m.band ? `<p class="note" style="margin-top:8px">L&T discloses order size as a band. FINN uses its midpoint.</p>` : ""}</div>`);
     }
     const body = !e.results && (e.gist || e.summary || (e.text !== e.subject ? e.text : ""));
     if (body && !(e.management && e.management.bio)) b.push(`<div class="block"><h3>From the filing</h3><p>${esc(body)}</p></div>`);
@@ -479,7 +479,7 @@
     const port = new Set(S.feed.portfolio.map((p) => p.symbol));
     const extra = S.index.filter((x) => !port.has(x.symbol)).map((x) => x.symbol);
     const graded = S.index.filter((x) => x.credibility).map((x) => x.symbol);
-    return `<header class="top"><div class="bar"><span class="brand">Delta</span>${statusLine()}</div>
+    return `<header class="top"><div class="bar"><span class="brand">FINN</span>${statusLine()}</div>
         <h1 style="margin-top:18px">Research</h1><p class="lede">Any NSE company, from its own filings.</p></header>
       <form class="search" data-search><input id="q" name="q" placeholder="Ticker, e.g. TRENT" autocomplete="off" autocapitalize="characters" enterkeyhint="search"><button type="submit">Go</button></form>
       <p class="try">Try ${[...new Set(graded.concat(extra))].map((s) => `<button data-rsym="${s}">${s}</button>`).join("")}</p>
@@ -489,7 +489,7 @@
   // ---------------------------------------------------------------- alerts
   function renderRules() {
     const R = S.rules, muted = new Set(R.muted_categories);
-    return `<header class="top"><div class="bar"><span class="brand">Delta</span>${statusLine()}</div>
+    return `<header class="top"><div class="bar"><span class="brand">FINN</span>${statusLine()}</div>
         <h1 style="margin-top:18px">Alerts</h1><p class="lede">You decide what counts as unusual.</p></header>
       <div class="field"><label for="r-px">A price moves more than <span>${R.price_move_pct}%</span></label>
         <input id="r-px" type="range" min="2" max="10" step="0.5" value="${R.price_move_pct}" data-rule="price_move_pct"><small>In one day, either way.</small></div>
@@ -617,7 +617,7 @@
       S.index = await getJSON("data/research/index.json").catch(() => []);
       S.rules = Object.assign({}, S.feed.rules, store.get("rules", {}));
     } catch (e) {
-      $("#main").innerHTML = `<p class="none" style="margin-top:32px">Delta couldn't load any data. Start the server with <b>python serve.py</b> and open the address it prints.</p>`;
+      $("#main").innerHTML = `<p class="none" style="margin-top:32px">FINN couldn't load any data. Start the server with <b>python serve.py</b> and open the address it prints.</p>`;
       return;
     }
     const h = (location.hash || "").slice(1);

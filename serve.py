@@ -1,4 +1,4 @@
-"""Delta live server.
+"""FINN live server.
 
     python serve.py            # http://localhost:8000
 
@@ -27,16 +27,16 @@ from datetime import datetime
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-os.environ.setdefault("DELTA_LIVE_TTL_MIN", os.environ.get("FINN_LIVE_TTL_MIN", "1.5"))  # must be set before the pipeline is imported
+os.environ.setdefault("FINN_LIVE_TTL_MIN", "1.5")  # must be set before the pipeline is imported
 
 from pipeline import build, news, research  # noqa: E402
 from pipeline.config import INDEX_SYMBOL, PORTFOLIO  # noqa: E402
-from pipeline.sources import ist_now, live_quote, live_quotes, setting  # noqa: E402
+from pipeline.sources import ist_now, live_quote, live_quotes  # noqa: E402
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-FEED_EVERY = int(setting("FEED_EVERY_SEC", 120))
-QUOTES_EVERY = int(setting("QUOTES_EVERY_SEC", 15))  # app polls every 30 s, so shown prices are under 45 s old
-DAYS = int(setting("DAYS", 30))
+FEED_EVERY = int(os.environ.get("FINN_FEED_EVERY_SEC", 120))
+QUOTES_EVERY = int(os.environ.get("FINN_QUOTES_EVERY_SEC", 15))  # app polls every 30 s, so shown prices are under 45 s old
+DAYS = int(os.environ.get("FINN_DAYS", 30))
 
 STATE = {"feed": None, "feed_live": False, "feed_error": None, "quotes": {}, "quotes_at": None, "checked_at": None,
          "extra": {},  # research tickers someone is looking at, priced on the same beat as the holdings
@@ -244,5 +244,5 @@ if __name__ == "__main__":
     threading.Thread(target=quotes_loop, daemon=True).start()
     threading.Thread(target=feed_loop, daemon=True).start()
     port = int(os.environ.get("PORT", 8000))
-    print(f"Delta live on http://localhost:{port}", flush=True)
+    print(f"FINN live on http://localhost:{port}", flush=True)
     ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever()
