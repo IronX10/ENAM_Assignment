@@ -1,6 +1,6 @@
 """Optional model calls, routed by cost.
 
-FINN runs without any key: rules and code produce every number, and NSE's own
+Delta runs without any key: rules and code produce every number, and NSE's own
 filing summaries fill the card text. With a key, two jobs use a model:
 
   cheap model  -> compress a bio, extract guidance rows from transcript snippets

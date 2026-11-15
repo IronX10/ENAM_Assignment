@@ -33,7 +33,7 @@ os.makedirs(CACHE, exist_ok=True)
 
 _S = requests.Session()
 _S.headers.update({
-    "User-Agent": "Mozilla/5.0 (FINN prototype; research use)",
+    "User-Agent": "Mozilla/5.0 (Delta prototype; research use)",
     "Accept-Language": "en-US,en;q=0.9",
 })
 

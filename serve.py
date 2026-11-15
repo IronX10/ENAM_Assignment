@@ -1,4 +1,4 @@
-"""FINN live server.
+"""Delta live server.
 
     python serve.py            # http://localhost:8000
 
@@ -233,5 +233,5 @@ if __name__ == "__main__":
     threading.Thread(target=quotes_loop, daemon=True).start()
     threading.Thread(target=feed_loop, daemon=True).start()
     port = int(os.environ.get("PORT", 8000))
-    print(f"FINN live on http://localhost:{port}", flush=True)
+    print(f"Delta live on http://localhost:{port}", flush=True)
     ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever()

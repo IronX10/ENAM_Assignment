@@ -6,7 +6,7 @@ import re
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 css = open(os.path.join(ROOT, "app", "styles.css"), encoding="utf-8").read()
 js = open(os.path.join(ROOT, "app", "app.js"), encoding="utf-8").read()
-page = f"""<title>FINN</title>
+page = f"""<title>Delta</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 {css}
