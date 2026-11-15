@@ -36,7 +36,7 @@ Without a server (any static host), the app opens the saved snapshot and says "S
 ### Put it online (free)
 
 1. Push this folder to a GitHub repository.
-2. On [render.com](https://render.com), choose **New → Blueprint** and pick the repository. `render.yaml` sets everything up. You get an address like `https://finn.onrender.com` that works on any phone or computer.
+2. On [render.com](https://render.com), choose **New → Blueprint** and pick the repository. `render.yaml` sets everything up. You get an address like `https://delta-xxxx.onrender.com` that works on any phone or computer.
 3. Optional: add `ANTHROPIC_API_KEY` in Render's environment settings to grade management's promises for any ticker typed in, not only the holdings that are already graded.
 
 Render's free plan sleeps after 15 idle minutes and takes about 30 seconds to wake. The saved snapshot covers that gap.

@@ -15,8 +15,10 @@ import os
 
 import requests
 
-CHEAP = os.environ.get("FINN_CHEAP_MODEL", "claude-haiku-5-5")
-STRONG = os.environ.get("FINN_STRONG_MODEL", "claude-sonnet-5-5")
+from .sources import setting
+
+CHEAP = setting("CHEAP_MODEL", "claude-haiku-5-5")
+STRONG = setting("STRONG_MODEL", "claude-sonnet-5-5")
 KEY = os.environ.get("ANTHROPIC_API_KEY")
 _CACHE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "cache", "llm")
 os.makedirs(_CACHE, exist_ok=True)

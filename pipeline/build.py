@@ -40,6 +40,7 @@ def read(name):
         return None
 
 
+YIELD = lambda: None  # the live server swaps this in so a research request someone is waiting on goes first
 _LAST = {"filings_checked": None}  # when NSE last answered; carried forward while it cannot be reached
 
 
@@ -57,6 +58,7 @@ def build_push(days):
 
     filings, screeners, prices, answered, silent = [], {}, {}, 0, []
     for p in PORTFOLIO:
+        YIELD()
         s = p["symbol"]
         got = nse_announcements(s, start, now)
         answered += 0 if last_fetch_failed() else 1

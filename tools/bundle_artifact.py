@@ -19,5 +19,5 @@ page = f"""<title>Delta</title>
 </script>
 """
 os.makedirs(os.path.join(ROOT, "dist"), exist_ok=True)
-open(os.path.join(ROOT, "dist", "finn.html"), "w", encoding="utf-8").write(page)
-print("dist/finn.html", len(page))
+open(os.path.join(ROOT, "dist", "delta.html"), "w", encoding="utf-8").write(page)
+print("dist/delta.html", len(page))

@@ -6,8 +6,8 @@
   const $ = (s, el = document) => el.querySelector(s);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const store = {
-    get(k, d) { try { const v = localStorage.getItem("finn:" + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem("finn:" + k, JSON.stringify(v)); } catch (e) { /* private mode */ } },
+    get(k, d) { try { const v = localStorage.getItem("delta:" + k) ?? localStorage.getItem("finn:" + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },  // finn: kept from before the rename
+    set(k, v) { try { localStorage.setItem("delta:" + k, JSON.stringify(v)); } catch (e) { /* private mode */ } },
   };
 
   const CAT = {

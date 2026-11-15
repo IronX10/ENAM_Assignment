@@ -15,7 +15,12 @@ import requests
 from bs4 import BeautifulSoup
 
 # Live mode (the server) refreshes filings and prices every few minutes; batch mode caches longer.
-LIVE_MIN = float(os.environ.get("FINN_LIVE_TTL_MIN", "0") or 0)
+def setting(name, default=None):
+    """DELTA_<name> from the environment; FINN_<name> still works, from before the rename."""
+    return os.environ.get("DELTA_" + name) or os.environ.get("FINN_" + name) or default
+
+
+LIVE_MIN = float(setting("LIVE_TTL_MIN", "0") or 0)
 
 
 def _ttl(batch_hours):
