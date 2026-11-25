@@ -136,6 +136,36 @@ def clean_exchange_text(text, company):
 _PDF_MEMO = {}
 
 
+_PDFIUM_LOCK = threading.Lock()  # PDFium is not thread-safe, and the feed refresh reads filings while research runs
+
+
+def _extract_pages(data, max_pages):
+    """(text of each of the first max_pages pages, page count). PDFium (C) reads a transcript about ten times
+    faster than pypdf (pure Python), which matters on a tenth of a CPU; pypdf stays as the fallback.
+    Every caller collapses whitespace, so the two give the same words to the rules downstream."""
+    try:
+        import pypdfium2 as pdfium
+        with _PDFIUM_LOCK:
+            doc = pdfium.PdfDocument(data)
+            try:
+                pages = []
+                for i in range(min(max_pages, len(doc))):
+                    page = doc[i]
+                    tp = page.get_textpage()
+                    pages.append(tp.get_text_bounded() or "")
+                    tp.close()
+                    page.close()
+                return pages, len(doc)
+            finally:
+                doc.close()
+    except Exception:
+        pass  # not installed, or a PDF it cannot open: try pypdf
+    import io
+    from pypdf import PdfReader
+    r = PdfReader(io.BytesIO(data))
+    return [(p.extract_text() or "") for p in r.pages[:max_pages]], len(r.pages)
+
+
 def pdf_pages(url, max_pages=6):
     """Text of each of the first pages of a PDF. Filings and transcripts are PDFs.
     Parsing is the slowest step on a small server, so the extracted text is cached on disk and in
@@ -162,11 +192,8 @@ def pdf_pages(url, max_pages=6):
         _PDF_MEMO[key] = unreadable  # not a PDF (some filings are XML or zip); no point re-reading it every refresh
         return []
     try:
-        import io
-        from pypdf import PdfReader
-        r = PdfReader(io.BytesIO(data))
-        pages = [(p.extract_text() or "") for p in r.pages[:max_pages]]
-        have = {"n": max_pages, "complete": len(r.pages) <= max_pages, "pages": pages}
+        pages, total = _extract_pages(data, max_pages)
+        have = {"n": max_pages, "complete": total <= max_pages, "pages": pages}
     except Exception:
         _PDF_MEMO[key] = unreadable
         return []

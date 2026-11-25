@@ -474,14 +474,62 @@
     return out.join("");
   }
 
+  // ---------------------------------------------------------------- search menu
+  // Every NSE company (data/companies.json, about 90 KB, fetched once on first use) is filtered right here as
+  // you type, so the menu appears without asking the server anything.
+  let companiesP = null, menu = { items: [], active: -1 };
+  const norm = (t) => String(t || "").toLowerCase().replace(/[^a-z0-9&]+/g, " ").trim();
+  function loadCompanies() {
+    if (!companiesP) {
+      companiesP = getJSON("data/companies.json")
+        .then((c) => { S.companies = c.map(([sym, name, rank]) => [sym, name, rank, norm(name)]); })
+        .catch(() => { companiesP = null; });   // try again on the next keystroke
+    }
+    return companiesP;
+  }
+  function matchCompanies(q, n = 8) {
+    const nq = norm(q), uq = String(q || "").toUpperCase().replace(/[^A-Z0-9&-]/g, "");
+    if (!nq && !uq) return [];
+    const saved = new Set(S.index.map((x) => x.symbol));
+    const list = S.companies || S.index.map((x) => [x.symbol, x.name, 0, norm(x.name)]);  // until the full list arrives
+    const out = [];
+    for (const [sym, name, rank, nn] of list) {
+      // 0 the exact ticker, 1 ticker or name starts with it, 2 a word in the name does, 3 the name contains it
+      const tier = sym === uq ? 0 : (uq && sym.startsWith(uq)) || (nq && nn.startsWith(nq)) ? 1
+        : nq && (" " + nn).includes(" " + nq) ? 2 : nq.length > 2 && nn.includes(nq) ? 3 : -1;
+      if (tier >= 0) out.push([tier, -(rank || 0), saved.has(sym) ? 0 : 1, name.length, sym, name]);
+    }
+    // within a tier, bigger companies (Nifty 50, then 100, then 500) first, then ones saved with the app
+    out.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2] || a[3] - b[3] || (a[4] < b[4] ? -1 : 1));
+    return out.slice(0, n).map((x) => ({ symbol: x[4], name: x[5], saved: saved.has(x[4]) }));
+  }
+  function drawMenu() {
+    const box = $("#qlist"), inp = $("#q"); if (!box || !inp) return;
+    const open = menu.items.length > 0;
+    box.hidden = !open; inp.setAttribute("aria-expanded", open);
+    box.innerHTML = menu.items.map((m, i) => `<button type="button" role="option" id="qo${i}" data-rsym="${esc(m.symbol)}" aria-selected="${i === menu.active}">
+        <span class="n">${esc(m.name)}</span><span class="t">${esc(m.symbol)}${m.saved ? `<i>saved</i>` : ""}</span></button>`).join("");
+    if (open && menu.active >= 0) { inp.setAttribute("aria-activedescendant", "qo" + menu.active); $("#qo" + menu.active)?.scrollIntoView({ block: "nearest" }); }
+    else inp.removeAttribute("aria-activedescendant");
+  }
+  function updateMenu() {
+    const inp = $("#q"); if (!inp) return;
+    menu.items = matchCompanies(inp.value); menu.active = menu.items.length ? 0 : -1;
+    drawMenu();
+  }
+  function closeMenu() { menu = { items: [], active: -1 }; drawMenu(); }
+
   function renderResearch() {
+    menu = { items: [], active: -1 };
     const r = S.research[S.rsym];
     const port = new Set(S.feed.portfolio.map((p) => p.symbol));
     const extra = S.index.filter((x) => !port.has(x.symbol)).map((x) => x.symbol);
     const graded = S.index.filter((x) => x.credibility).map((x) => x.symbol);
     return `<header class="top"><div class="bar"><span class="brand">FINN</span>${statusLine()}</div>
         <h1 style="margin-top:18px">Research</h1><p class="lede">Any NSE company, from its own filings.</p></header>
-      <form class="search" data-search><input id="q" name="q" placeholder="Ticker, e.g. TRENT" autocomplete="off" autocapitalize="characters" enterkeyhint="search"><button type="submit">Go</button></form>
+      <form class="search" data-search role="search"><input id="q" name="q" placeholder="Company or ticker, e.g. Trent" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search"
+          role="combobox" aria-label="Company or ticker" aria-autocomplete="list" aria-controls="qlist" aria-expanded="false"><button type="submit">Go</button>
+        <div class="qlist" id="qlist" role="listbox" aria-label="Matching companies" hidden></div></form>
       <p class="try">Try ${[...new Set(graded.concat(extra))].map((s) => `<button data-rsym="${s}">${s}</button>`).join("")}</p>
       ${S.loading ? `<p class="none">Reading ${esc(S.rsym)}'s filings…</p>` : S.rerr ? `<p class="none">${esc(S.rerr)}</p>` : r ? researchBody(r) : ""}`;
   }
@@ -565,7 +613,27 @@
   });
   document.addEventListener("submit", (ev) => {
     if (!ev.target.matches("[data-search]")) return;
-    ev.preventDefault(); ev.target.querySelector("input").blur(); loadResearch(new FormData(ev.target).get("q"));
+    ev.preventDefault();
+    const typed = new FormData(ev.target).get("q"), pick = menu.items[menu.active];
+    ev.target.querySelector("input").blur(); closeMenu();
+    loadResearch(pick ? pick.symbol : typed);   // Enter takes the highlighted company, so "nestle" opens NESTLEIND
+  });
+  document.addEventListener("input", (ev) => {
+    if (ev.target.id !== "q") return;
+    updateMenu();
+    if (!S.companies) loadCompanies().then(() => { if (document.activeElement === ev.target) updateMenu(); });
+  });
+  document.addEventListener("focusin", (ev) => { if (ev.target.id === "q") { loadCompanies(); if (ev.target.value) updateMenu(); } });
+  document.addEventListener("focusout", (ev) => {
+    if (ev.target.id === "q") setTimeout(() => { if (document.activeElement?.id !== "q") closeMenu(); }, 200);  // after a tap on the menu lands
+  });
+  document.addEventListener("mousedown", (ev) => { if (ev.target.closest("#qlist")) ev.preventDefault(); });  // keep the input focused
+  document.addEventListener("keydown", (ev) => {
+    if (ev.target.id !== "q" || !menu.items.length) return;
+    const n = menu.items.length;
+    if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+      ev.preventDefault(); menu.active = (menu.active + (ev.key === "ArrowDown" ? 1 : n - 1)) % n; drawMenu();
+    } else if (ev.key === "Escape") { ev.stopPropagation(); closeMenu(); }
   });
   document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && S.open) { S.open = null; render(); } });
 

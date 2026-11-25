@@ -23,6 +23,7 @@ import re
 import threading
 import time
 import traceback
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
@@ -138,11 +139,14 @@ def saved_research(sym):
         return None
     if r.get("error") or age_h > SAVED_FRESH_H:
         return None
-    try:
-        r["quote"] = live_quote(sym) or r.get("quote")
-        r["news"] = news.headlines(sym, r.get("name"), days=7, limit=5) or r.get("news", [])
-    except Exception:
-        traceback.print_exc()
+    with ThreadPoolExecutor(max_workers=2) as pool:  # price and headlines side by side, not one after the other
+        q = pool.submit(live_quote, sym)
+        n = pool.submit(news.headlines, sym, r.get("name"), days=7, limit=5)
+        try:
+            r["quote"] = q.result() or r.get("quote")
+            r["news"] = n.result() or r.get("news", [])
+        except Exception:
+            traceback.print_exc()
     return r
 
 

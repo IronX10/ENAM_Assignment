@@ -15,7 +15,7 @@ import threading
 import time
 from datetime import datetime, timedelta
 
-from . import llm, news, push, research
+from . import companies, llm, news, push, research
 from .config import DEFAULT_RULES, INDEX_SYMBOL, PORTFOLIO, RESEARCH_EXTRA
 from .sources import ROOT, eod_prices, ist_now, last_fetch_failed, nse_announcements, screener
 
@@ -152,6 +152,15 @@ def main():
             print("feed", path, feed["stats"])
         except Exception as ex:  # a blocked source must not wipe the saved snapshot
             print("feed not refreshed:", ex)
+    if not a.research:
+        try:
+            listed = companies.companies()  # for the search menu; kept as it was if NSE does not answer
+        except Exception as ex:
+            listed = None
+            print("company list not refreshed:", ex)
+        if listed:
+            write("companies.json", listed)
+            print("companies", len(listed))
     syms = a.research or [p["symbol"] for p in PORTFOLIO] + RESEARCH_EXTRA
     idx = build_research(syms)
     if not a.research and idx:
