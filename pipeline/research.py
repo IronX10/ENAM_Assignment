@@ -9,6 +9,7 @@ own knowledge, news or broker notes.
 import json
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
 
 from bs4 import BeautifulSoup
 
@@ -69,6 +70,18 @@ def build(symbol):
         return {"symbol": symbol, "error": f"No company found for {symbol}. Check the NSE ticker, for example TRENT or NESTLEIND."}
     if not scr["pl"].get("cols") or not scr.get("quarters") or not scr["quarters"].get("cols"):
         return {"symbol": symbol, "error": f"{scr.get('name') or symbol} has no yearly results to read yet."}
+
+    # Everything else this page needs from the network, fetched side by side instead of one after another:
+    # the latest call transcripts, the standalone statements, today's price and headlines. The numbers below
+    # are worked out from the page already in hand while these arrive.
+    pool = ThreadPoolExecutor(max_workers=6)
+    calls = [c for c in scr["docs"]["concalls"] if c.get("transcript")][:4 if llm.KEY else 2]
+    reading = [pool.submit(pdf_pages, c["transcript"], 40) for c in calls]
+    if scr.get("basis") == "consolidated":
+        reading.append(pool.submit(screener, symbol, ("",)))
+    quote_f = pool.submit(live_quote, symbol)
+    news_f = pool.submit(news.headlines, symbol, scr["name"], days=7, limit=5)
+    pool.shutdown(wait=False)
 
     pl, bs, cf, rt, q = scr["pl"], scr["bs"], scr["cf"], scr["ratios"], scr["quarters"]
     is_fin = series(pl, "Financing Profit") is not None
@@ -157,6 +170,8 @@ def build(symbol):
     quarters = {"cols": q["cols"][-8:], "revenue": qrev[-8:], "op": (qop or [])[-8:], "pat": qpat[-8:],
                 "source": scr["url"] + "#quarters"}
 
+    for f in reading:
+        _safe(f.result, None)  # transcripts and standalone page are now on hand for the two readers below
     guidance = load_guidance(symbol, scr, quarters)
 
     research = {
@@ -176,8 +191,8 @@ def build(symbol):
     research["claims"] = _safe(lambda: reality.claims_check(scr, is_fin), {"items": [], "checked": 0})
     research["quality"] = _safe(lambda: reality.profit_quality(scr, is_fin), {"checks": []})
     # live price and headlines: context only, never used in the analysis above
-    research["quote"] = _safe(lambda: live_quote(symbol), None)
-    research["news"] = _safe(lambda: news.headlines(symbol, scr["name"], days=7, limit=5), [])
+    research["quote"] = _safe(quote_f.result, None)
+    research["news"] = _safe(news_f.result, []) or []
     research["generated"] = ist_now().isoformat(timespec="minutes")
     return research
 
@@ -197,10 +212,48 @@ def first_sentences(t, n):
 
 # ------------------------------------------------------------------ guidance
 
-GUIDE_RX = re.compile(
-    r"([^.?!]{0,220}\b(guid(?:e|ance|ing)|expect|target|aspir|we will|we should|going forward|next year|"
-    r"for the year|full[- ]year|fy ?2\d|by fy|band|range of|in the range)\b[^.?!]{0,220}"
-    r"\d[\d,.]*\s*(?:%|percent|per cent|crore|cr\b|bps|basis points|stores|x\b)[^.?!]{0,160}[.?!])", re.I)
+_GUIDE_WORDS = (r"guid(?:e|ance|ing)|expect|target|aspir|we will|we should|going forward|next year|"
+                r"for the year|full[- ]year|fy ?2\d|by fy|band|range of|in the range")
+_GUIDE_TAIL = (r"\b(" + _GUIDE_WORDS + r")\b[^.?!]{0,220}"
+               r"\d[\d,.]*\s*(?:%|percent|per cent|crore|cr\b|bps|basis points|stores|x\b)[^.?!]{0,160}[.?!]")
+# The sentence-like pattern below, used as-is, tries every character of a transcript as a starting point and
+# scans 220 characters from each: about a fifth of a second per transcript here, two seconds on a tenth of a CPU.
+GUIDE_RX = re.compile(r"([^.?!]{0,220}" + _GUIDE_TAIL + ")", re.I)
+_WORD_AT = re.compile(r"(?=\b(?:" + _GUIDE_WORDS + "))", re.I)
+_TAIL_RX = re.compile(_GUIDE_TAIL, re.I)
+_STOP = re.compile(r"[.?!]")
+
+
+def guidance_sentences(text):
+    """The same matches, in the same order, as GUIDE_RX.finditer(text), found from the guidance words outward.
+    A match is up to 220 characters with no full stop, then a guidance word followed by a number and a unit,
+    so only the few places where a guidance word starts a valid tail need looking at."""
+    from bisect import bisect_left, bisect_right
+    tails = []                                      # (word position, end of the match from there)
+    for w in _WORD_AT.finditer(text):
+        m = _TAIL_RX.match(text, w.start())
+        if m:
+            tails.append((w.start(), m.end()))
+    if not tails:
+        return []
+    stops = [m.start() for m in _STOP.finditer(text)]
+    words = [j for j, _ in tails]
+    out, pos, i = [], 0, 0
+    while True:
+        while i < len(tails) and tails[i][0] < pos:
+            i += 1
+        if i == len(tails):
+            return out
+        j = tails[i][0]
+        k = bisect_left(stops, j)                   # stops before the word
+        start = max(pos, j - 220, stops[k - 1] + 1 if k else 0)   # the leftmost start that still reaches it
+        # the greedy lead-in then takes the furthest word it can reach: within 220 characters, no stop between
+        nxt = bisect_left(stops, start)
+        limit = min(start + 220, stops[nxt] if nxt < len(stops) else len(text))
+        best = bisect_right(words, limit) - 1
+        end = tails[best][1]
+        out.append(text[start:end])
+        pos = end
 
 
 def transcript_snippets(url, limit=14):
@@ -208,8 +261,8 @@ def transcript_snippets(url, limit=14):
     pages = pdf_pages(url, max_pages=40)
     out = []
     for pi, page in enumerate(pages, 1):
-        for m in GUIDE_RX.finditer(" ".join(page.split())):
-            s = m.group(1).strip()
+        for g in guidance_sentences(" ".join(page.split())):
+            s = g.strip()
             if len(s) > 40:
                 out.append((pi, s))
     seen, uniq = set(), []
